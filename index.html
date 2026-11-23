@@ -71,13 +71,46 @@
   .chip.on{background:#191922;border-color:#191922;color:#fff}
   .chip.on .n{color:#c9c9d8}
   .chip.on .d{box-shadow:0 0 0 2px rgba(255,255,255,.28)}
-  .chart{display:flex;align-items:flex-end;gap:2px;height:92px;margin:2px 0 6px;cursor:pointer}
-  .chart .b{flex:1;min-width:2px;padding:0;border:0;background:#c9c9e3;border-radius:3px 3px 1px 1px;transition:background .1s;position:relative}
-  .chart .b:hover{background:#a9a9d2}
-  .chart .b.on{background:#3f4bd8}
-  .chart .b.zero{background:#e7e7f2}
-  .yrs{display:flex;justify-content:space-between;font-size:10.5px;color:#8b8da0;margin:0 0 6px}
+  .rangebar{display:flex;flex-direction:column;gap:9px}
+  .rangecur{font-size:15px;font-weight:700;letter-spacing:-.25px;font-variant-numeric:tabular-nums;line-height:1.35;word-break:break-word}
+  .rangecur .rlabel{display:block;font-size:10.5px;font-weight:700;color:#8b8da0;letter-spacing:.2px;margin-bottom:1px}
+  .rangeacts{display:flex;gap:6px;flex-wrap:wrap}
+  .rangeacts .btn{flex:none}
   .hint{font-size:11px;color:#8b8da0;margin:0}
+
+  /* 달력 피커 */
+  .cal .calhead{display:flex;align-items:center;gap:8px;margin:14px 0 4px}
+  .cal .calnav{width:40px;height:40px;flex:none;border-radius:12px;border:1px solid var(--line);background:#fff;font-size:20px;line-height:1;
+    display:flex;align-items:center;justify-content:center}
+  .cal .calnav:active{background:#f0f0fa}
+  .cal .calnav[disabled]{opacity:.35}
+  .cal .calsel{flex:1;display:flex;gap:6px;justify-content:center;min-width:0}
+  .cal .calsel select{appearance:none;border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 28px 9px 11px;
+    font-size:14px;font-weight:600;color:var(--ink);
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0l5 6 5-6z' fill='%23666'/></svg>");
+    background-repeat:no-repeat;background-position:right 10px center}
+  .cal .calwd{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:11px;color:#8b8da0;margin:6px 0 3px}
+  .cal .calwd span:first-child{color:#d6376b}
+  .cal .calwd span:last-child{color:#2f6fb2}
+  .cal .calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;touch-action:manipulation}
+  .cal .calday{position:relative;height:42px;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:2px;font-size:14px;font-variant-numeric:tabular-nums;color:#2a2b3a;background:transparent;line-height:1}
+  .cal .calday:active{background:#f0f0fa}
+  .cal .calday.sun{color:#d6376b}
+  .cal .calday.sat{color:#2f6fb2}
+  .cal .calday.out{color:#c9cad8}
+  .cal .calday.in{background:#ececfb}
+  .cal .calday.edge{background:#191922;color:#fff;font-weight:700}
+  .cal .calday.today::after{content:'';position:absolute;left:50%;bottom:5px;transform:translateX(-50%);width:16px;height:2px;border-radius:2px;background:#b9bacd}
+  .cal .calday.today.edge::after{background:#7e83e8}
+  .cal .calday .dot{width:4px;height:4px;border-radius:50%;background:#3f4bd8;display:block}
+  .cal .calday.edge .dot{background:#9fa4ff}
+  .cal .calday.out .dot{background:#d3d4e4}
+  .cal .calrange{text-align:center;font-size:13.5px;font-weight:700;color:#3d3f52;margin:10px 0 0;min-height:20px;font-variant-numeric:tabular-nums}
+  .cal .calrange span{font-weight:500;color:#8b8da0;font-size:12px}
+  .cal .calacts{display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap}
+  .cal .calacts .btn{padding:10px 13px;font-size:13px}
+  .cal .calacts .spacer{flex:1;min-width:0}
   .searchbox{position:relative}
   .searchbox input{width:100%;padding:11px 13px;border-radius:12px;border:1px solid var(--line);background:#fff;font-size:14px;color:var(--ink)}
   .searchbox input::placeholder{color:#a2a4b5}
@@ -133,11 +166,14 @@
 
   /* 선택 바 */
   .selbar{position:fixed;left:0;right:0;bottom:0;z-index:40;background:#fff;border-top:1px solid var(--line);
-    padding:10px 14px calc(10px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:8px;
+    padding:10px 14px calc(10px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;
     box-shadow:0 -8px 24px rgba(24,24,40,.07);transform:translateY(110%);transition:transform .18s}
   body.sel .selbar{transform:none}
-  .selbar .n{font-size:13px;font-weight:700;margin-right:auto}
+  .selbar .n{font-size:13px;font-weight:700}
   .selbar .n span{font-weight:500;color:var(--mut);font-size:11.5px}
+  .selacts{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+  .selacts .btn{padding:9px 12px;white-space:nowrap}
+  .selacts .btn.bulk{flex:1 1 0;justify-content:center;min-width:0}
 
   /* 시트/모달 */
   .scrim{position:fixed;inset:0;background:rgba(20,20,35,.42);z-index:50;opacity:0;pointer-events:none;transition:opacity .18s}
@@ -227,8 +263,11 @@
     .chips{flex-wrap:wrap;gap:6px;padding:2px 0;margin:0}
     .chip{flex:none;padding:6px 10px;font-size:13px}
     .chip .n{font-size:12px}
-    .chart{height:50px;margin-bottom:2px}
-    .yrs{font-size:11px;margin-bottom:2px}
+    .rangebar{flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 10px}
+    .rangecur{flex:1 1 140px;font-size:14px;line-height:1.3}
+    .rangecur .rlabel{font-size:10px}
+    .rangeacts{align-items:center;flex:0 0 auto;margin-left:auto}
+    .rangeacts .btn{padding:8px 11px;font-size:13px}
     .hint{display:none}
     .searchbox input{padding:11px 13px;font-size:15px}
     .toolbar{margin:2px 2px 10px;gap:8px}
@@ -236,6 +275,10 @@
     .cnt b{font-size:15px}
     select.sort{font-size:13.5px;padding:8px 28px 8px 11px}
     .btn{font-size:13.5px;padding:8px 13px}
+    .toolbar{row-gap:6px}
+    .toolbar .spacer{display:none}
+    .toolbar #newBtn{margin-left:auto}
+    .toolbar #selBtn,.toolbar #selLabelBtn{flex:1 1 140px;min-width:0;justify-content:center;white-space:nowrap}
     .day h3{font-size:14px;margin:0 0 8px 3px}
     .memo{padding:13px 14px 11px}
     .memo time{font-size:12.5px}
@@ -298,11 +341,15 @@
         <h2>분류</h2>
         <div class="chips" id="chips"></div>
       </section>
-      <section class="panel">
-        <h2>월별 메모 수</h2>
-        <div class="chart" id="chart" aria-label="월별 메모 수 막대 차트"></div>
-        <div class="yrs" id="yrs"></div>
-        <p class="hint">막대를 누르면 그 달만 봐요</p>
+      <section class="panel" id="periodPanel">
+        <h2>기간</h2>
+        <div class="rangebar">
+          <div class="rangecur" id="rangeCur" aria-live="polite"><span class="rlabel">전체 기간</span>–</div>
+          <div class="rangeacts">
+            <button class="btn" id="rangeBtn" aria-haspopup="dialog">📅 기간 선택</button>
+            <button class="btn ghost" id="rangeReset" hidden>초기화(전체)</button>
+          </div>
+        </div>
       </section>
       <section class="panel">
         <div class="searchbox">
@@ -321,6 +368,7 @@
         <span class="spacer"></span>
         <button class="btn newbtn" id="newBtn">＋ 새 메모</button>
         <button class="btn pink" id="selBtn">선택해서 삭제</button>
+        <button class="btn" id="selLabelBtn">선택해서 라벨변경</button>
       </div>
       <div class="list" id="list"></div>
       <div class="empty" id="empty" hidden>조건에 맞는 메모가 없어요</div>
@@ -331,9 +379,12 @@
 
   <div class="selbar" id="selbar">
     <span class="n" id="selN">0개 선택 <span>· 카드를 눌러 선택</span></span>
-    <button class="btn ghost" id="selAll">전체</button>
-    <button class="btn ghost" id="selCancel">취소</button>
-    <button class="btn danger" id="selDel">삭제</button>
+    <div class="selacts">
+      <button class="btn ghost" id="selAll">전체</button>
+      <button class="btn ghost" id="selCancel">취소</button>
+      <button class="btn bulk" id="selLabel">라벨 변경</button>
+      <button class="btn danger bulk" id="selDel">영구 삭제</button>
+    </div>
   </div>
 
   <button class="fab" id="fabNew" title="새 메모" aria-label="새 메모 작성">＋</button>
@@ -412,6 +463,29 @@
   <p class="small" id="labelMsg"></p>
 </div>
 
+<div class="sheet cal" id="calSheet" role="dialog" aria-modal="true" aria-labelledby="calTitle">
+  <button class="close" id="calClose" aria-label="닫기">✕</button>
+  <h2 id="calTitle">기간 선택</h2>
+  <p class="small" id="calHint">메모가 있는 날에 점이 찍혀요. 날짜를 누르면 하루, 두 날짜를 차례로 누르면 기간이 돼요.</p>
+  <div class="calhead">
+    <button class="calnav" id="calPrev" aria-label="이전 달">‹</button>
+    <div class="calsel">
+      <select id="calYear" aria-label="연도"></select>
+      <select id="calMonth" aria-label="월"></select>
+    </div>
+    <button class="calnav" id="calNext" aria-label="다음 달">›</button>
+  </div>
+  <div class="calwd"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
+  <div class="calgrid" id="calGrid" aria-label="날짜 선택"></div>
+  <p class="calrange" id="calRange">날짜를 골라 주세요</p>
+  <div class="calacts">
+    <button class="btn ghost" id="calAll">전체 기간</button>
+    <span class="spacer"></span>
+    <button class="btn" id="calOne">하루만</button>
+    <button class="btn dark" id="calApply">적용</button>
+  </div>
+</div>
+
 <div class="modal" id="confirm" role="dialog" aria-modal="true">
   <h3 id="confirmTitle">삭제할까요?</h3>
   <p id="confirmBody"></p>
@@ -429,7 +503,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script>window.__CFG__ = {"repo":"du020202/kakao-archive","branch":"main","iter":100000,"dataUrl":"data.enc.json","deletedUrl":"deleted_ids.enc.json","deletedPath":"deleted_ids.enc.json","editsUrl":"edits.enc.json","editsPath":"edits.enc.json","customUrl":"custom_memos.enc.json","customPath":"custom_memos.enc.json","build":"2026-11-23T23:17","cats":[{"name":"링크·스크랩","color":"#2f6fb2"},{"name":"메모·할 일","color":"#6b7280"},{"name":"책·도서관","color":"#0f9d76"},{"name":"여행","color":"#0f8f9e"},{"name":"아이·학교","color":"#d9436b"},{"name":"업무 메모","color":"#7c5cd6"},{"name":"영어 학습","color":"#d97a1f"},{"name":"진도 기록","color":"#a8821a"},{"name":"파일","color":"#4a6fa5"},{"name":"사진·영상","color":"#7b8794"},{"name":"기타","color":"#8a6246"},{"name":"스크린샷","color":"#2f8f8f"},{"name":"다운로드","color":"#a06a3c"}]};</script>
+<script>window.__CFG__ = {"repo":"du020202/kakao-archive","branch":"main","iter":100000,"dataUrl":"data.enc.json","deletedUrl":"deleted_ids.enc.json","deletedPath":"deleted_ids.enc.json","editsUrl":"edits.enc.json","editsPath":"edits.enc.json","customUrl":"custom_memos.enc.json","customPath":"custom_memos.enc.json","build":"2026-11-23T23:39","cats":[{"name":"링크·스크랩","color":"#2f6fb2"},{"name":"메모·할 일","color":"#6b7280"},{"name":"책·도서관","color":"#0f9d76"},{"name":"여행","color":"#0f8f9e"},{"name":"아이·학교","color":"#d9436b"},{"name":"업무 메모","color":"#7c5cd6"},{"name":"영어 학습","color":"#d97a1f"},{"name":"진도 기록","color":"#a8821a"},{"name":"파일","color":"#4a6fa5"},{"name":"사진·영상","color":"#7b8794"},{"name":"기타","color":"#8a6246"},{"name":"스크린샷","color":"#2f8f8f"},{"name":"다운로드","color":"#a06a3c"}]};</script>
 <script>
 (function(){
 "use strict";
@@ -508,7 +582,7 @@ function lsDel(k){ try{ localStorage.removeItem(k); }catch(e){} }
 function getPat(){ var p = ls(K_PAT); return (p && p.length > 20) ? p : ''; }
 
 /* ───────── 상태 ───────── */
-var S = {cat:null, month:null, q:'', sort:'desc', selMode:false, sel:{}, deleted:{}, limit:60};
+var S = {cat:null, from:null, to:null, q:'', sort:'desc', selMode:false, sel:{}, deleted:{}, limit:60};
 var MEMOS = [], META = {}, MEDIA = {}, mediaKey = null, mediaKeyPromise = null, PIN = null;
 var LIST = [], DAYS = [], blobCache = {}, inflated = {};
 
@@ -604,13 +678,13 @@ function submitPin(){
 function lockApp(){
   PIN = null; MEMOS = []; META = {}; mediaKey = null; mediaKeyPromise = null; LIST = []; DAYS = [];
   BASE_MEMOS = []; EDITS = {labels:[], memoCat:{}, updatedAt:null}; CUSTOM = {memos:[], updatedAt:null};
-  pendingAtts = []; composeMid = ''; attIdx = 0; UP = {};
+  pendingAtts = []; composeMid = ''; attIdx = 0; UP = {}; labelFor = null; labelTargets = null; CAL.from = null; CAL.to = null;
   CATS = (CFG.cats || []).slice(); CATCOLOR = {};
   CATS.forEach(function(c){ CATCOLOR[c.name] = c.color; });
   Object.keys(blobCache).forEach(function(k){ try{ URL.revokeObjectURL(blobCache[k].url); }catch(e){} });
-  blobCache = {}; inflated = {}; S.sel = {}; S.selMode = false; S.cat = null; S.month = null; S.q = ''; S.limit = 60;
+  blobCache = {}; inflated = {}; S.sel = {}; S.selMode = false; S.cat = null; S.from = null; S.to = null; S.q = ''; S.limit = 60;
   buf = ''; renderDots(0);
-  ['sheet', 'labelSheet', 'composeSheet', 'confirm'].forEach(function(k){ try{ $(k).classList.remove('on'); }catch(e){} });
+  ['sheet', 'labelSheet', 'composeSheet', 'calSheet', 'confirm'].forEach(function(k){ try{ $(k).classList.remove('on'); }catch(e){} });
   try{ $('scrim').classList.remove('on'); }catch(e){}
   ['composeText', 'composeMsg', 'attprev', 'labelSub', 'labelList', 'catPick', 'labelName', 'catNew'].forEach(function(k){
     try{ if(k === 'composeText' || k === 'labelName' || k === 'catNew') $(k).value = ''; else $(k).innerHTML = ''; }catch(e){}
@@ -670,7 +744,9 @@ function visible(){
   var q = S.q.trim().toLowerCase();
   var arr = alive().filter(function(m){
     if(S.cat && m.cat !== S.cat) return false;
-    if(S.month && m.ts.slice(0,7) !== S.month) return false;
+    var d = m.ts.slice(0,10);
+    if(S.from && d < S.from) return false;
+    if(S.to && d > S.to) return false;
     if(q && searchable(m).indexOf(q) < 0) return false;
     return true;
   });
@@ -693,8 +769,9 @@ function fmtTs(ts){
 
 function renderChips(){
   var counts = {};
-  alive().forEach(function(m){ counts[m.cat] = (counts[m.cat]||0) + 1; });
-  var html = '<button class="chip' + (S.cat ? '' : ' on') + '" data-cat="">전체 <span class="n">' + num(alive().length) + '</span></button>';
+  var pool = periodAlive();
+  pool.forEach(function(m){ counts[m.cat] = (counts[m.cat]||0) + 1; });
+  var html = '<button class="chip' + (S.cat ? '' : ' on') + '" data-cat="">전체 <span class="n">' + num(pool.length) + '</span></button>';
   CATS.forEach(function(c){
     html += '<button class="chip' + (S.cat === c.name ? ' on' : '') + '" data-cat="' + esc(c.name) + '">' +
       '<span class="d" style="background:' + c.color + '"></span>' + esc(c.name) +
@@ -703,41 +780,163 @@ function renderChips(){
   $('chips').innerHTML = html;
 }
 
-function monthList(){
-  var first = META.first, last = META.last;
-  MEMOS.forEach(function(m){
-    if(S.deleted[m.id]) return;
-    if(!first || m.ts < first) first = m.ts;
-    if(!last || m.ts > last) last = m.ts;
-  });
-  if(!first || !last) return [];
-  var y = +first.slice(0,4), m = +first.slice(5,7);
-  var ey = +last.slice(0,4), em = +last.slice(5,7);
-  var out = [];
-  while(y < ey || (y === ey && m <= em)){
-    out.push(y + '-' + pad(m));
-    m++; if(m > 12){ m = 1; y++; }
-  }
-  return out;
+/* ───────── 기간(달력 피커) ───────── */
+var dateCountCache = null;
+function dateCounts(){
+  if(dateCountCache) return dateCountCache;
+  var o = {};
+  alive().forEach(function(m){ var d = m.ts.slice(0,10); o[d] = (o[d]||0) + 1; });
+  dateCountCache = o;
+  return o;
 }
-function renderChart(){
-  var months = monthList();
-  var counts = {};
-  alive().forEach(function(m){ var k = m.ts.slice(0,7); counts[k] = (counts[k]||0) + 1; });
-  var max = 1;
-  months.forEach(function(k){ max = Math.max(max, counts[k] || 0); });
-  var html = '';
-  months.forEach(function(k){
-    var n = counts[k] || 0;
-    var h = Math.max(2, Math.round(n / max * 100));
-    html += '<button class="b' + (n ? '' : ' zero') + (S.month === k ? ' on' : '') + '" data-month="' + k +
-      '" style="height:' + h + '%" title="' + k.replace('-', '.') + ' · ' + n + '건" aria-label="' + k.replace('-', '.') + ' ' + n + '건"></button>';
+function periodAlive(){
+  if(!S.from && !S.to) return alive();
+  return alive().filter(function(m){
+    var d = m.ts.slice(0,10);
+    return (!S.from || d >= S.from) && (!S.to || d <= S.to);
   });
-  $('chart').innerHTML = html;
-  var years = [];
-  months.forEach(function(k, i){ if(k.slice(5) === '01' || i === 0) years.push(k.slice(2,4)); });
-  if(years[years.length-1] !== months[months.length-1].slice(2,4)) years.push(months[months.length-1].slice(2,4));
-  $('yrs').innerHTML = years.map(function(y){ return '<span>' + y + '</span>'; }).join('');
+}
+function dataBounds(){
+  var first = null, last = null;
+  alive().forEach(function(m){
+    var d = m.ts.slice(0,10);
+    if(!first || d < first) first = d;
+    if(!last || d > last) last = d;
+  });
+  return {first:first, last:last};
+}
+function dotDate(d){ return String(d).replace(/-/g, '.'); }
+function todayIso(){
+  var d = new Date();
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+}
+function rangeLabel(){
+  if(S.from || S.to){
+    var a = S.from || S.to, b = S.to || S.from;
+    if(a === b) return {label:'선택한 날짜', main:dotDate(a)};
+    return {label:'선택한 기간', main:dotDate(a) + ' ~ ' + dotDate(b)};
+  }
+  var bd = dataBounds();
+  return {label:'전체 기간', main:(bd.first ? dotDate(bd.first) + ' ~ ' + dotDate(bd.last) : '–')};
+}
+function renderPeriod(){
+  var r = rangeLabel();
+  $('rangeCur').innerHTML = '<span class="rlabel">' + esc(r.label) + '</span>' + esc(r.main);
+  $('rangeReset').hidden = !(S.from || S.to);
+  $('rangeBtn').textContent = (S.from || S.to) ? '기간 바꾸기' : '📅 기간 선택';
+}
+
+var CAL = {y:0, m:0, from:null, to:null, touched:false};
+function calYears(){
+  var bd = dataBounds(), ys = [];
+  var ty = new Date().getFullYear();
+  var y0 = bd.first ? +bd.first.slice(0,4) : ty;
+  var y1 = bd.last ? +bd.last.slice(0,4) : ty;
+  y0 = Math.min(y0, ty); y1 = Math.max(y1, ty);
+  for(var y = y0; y <= y1; y++) ys.push(y);
+  return ys;
+}
+function fillCalSelects(){
+  var ys = calYears(), html = '';
+  if(ys.indexOf(CAL.y) < 0) ys.push(CAL.y);
+  ys.sort(function(a,b){ return a-b; });
+  ys.forEach(function(y){ html += '<option value="' + y + '"' + (y === CAL.y ? ' selected' : '') + '>' + y + '년</option>'; });
+  $('calYear').innerHTML = html;
+  html = '';
+  for(var m = 0; m < 12; m++){
+    html += '<option value="' + m + '"' + (m === CAL.m ? ' selected' : '') + '>' + (m+1) + '월</option>';
+  }
+  $('calMonth').innerHTML = html;
+  $('calPrev').disabled = (CAL.y <= ys[0] && CAL.m <= 0);
+  $('calNext').disabled = (CAL.y >= ys[ys.length-1] && CAL.m >= 11);
+}
+function calRangeText(){
+  if(!CAL.from) return '날짜를 골라 주세요';
+  if(!CAL.to || CAL.from === CAL.to) return dayLabel(CAL.from) + ' <span>하루</span>';
+  var n = Math.round((Date.parse(CAL.to + 'T00:00:00Z') - Date.parse(CAL.from + 'T00:00:00Z')) / 86400000) + 1;
+  return dotDate(CAL.from) + ' ~ ' + dotDate(CAL.to) + ' <span>' + n + '일</span>';
+}
+function calHintText(){
+  if(!CAL.from) return '메모가 있는 날에 점이 찍혀요. 날짜를 누르면 하루, 두 날짜를 차례로 누르면 기간이 돼요.';
+  if(CAL.from === CAL.to) return '같은 날짜를 한 번 더 누르거나 [하루만]·[적용]을 누르면 하루만 봐요. 다른 날짜를 누르면 기간이 돼요.';
+  return '기간을 골랐어요. [적용]을 누르면 이 기간만 보여줘요.';
+}
+function renderCal(){
+  var counts = dateCounts(), y = CAL.y, m = CAL.m;
+  var firstDow = new Date(Date.UTC(y, m, 1)).getUTCDay();
+  var daysIn = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+  var start = Date.UTC(y, m, 1 - firstDow);
+  var rows = Math.ceil((firstDow + daysIn) / 7);
+  var tIso = todayIso();
+  var html = '';
+  for(var i = 0; i < rows * 7; i++){
+    var dt = new Date(start + i * 86400000);
+    var yy = dt.getUTCFullYear(), mm = dt.getUTCMonth() + 1, dd = dt.getUTCDate();
+    var iso = yy + '-' + pad(mm) + '-' + pad(dd);
+    var n = counts[iso] || 0;
+    var cls = 'calday';
+    if(mm - 1 !== m) cls += ' out';
+    var dow = i % 7;
+    if(dow === 0) cls += ' sun'; else if(dow === 6) cls += ' sat';
+    if(iso === tIso) cls += ' today';
+    if(CAL.from && CAL.to && iso >= CAL.from && iso <= CAL.to){
+      cls += ' in';
+      if(iso === CAL.from || iso === CAL.to) cls += ' edge';
+    }
+    var tip = dotDate(iso) + (n ? ' · ' + n + '건' : ' · 메모 없음');
+    html += '<button type="button" class="' + cls + '" data-d="' + iso + '" title="' + tip + '"' +
+      ' aria-label="' + tip + '"' + (iso === CAL.from || iso === CAL.to ? ' aria-pressed="true"' : '') + '>' +
+      '<span class="dn">' + dd + '</span>' + (n ? '<span class="dot"></span>' : '') + '</button>';
+  }
+  $('calGrid').innerHTML = html;
+  $('calRange').innerHTML = calRangeText();
+  $('calHint').textContent = calHintText();
+  $('calOne').disabled = !(CAL.from && CAL.from === CAL.to);
+  $('calApply').disabled = !CAL.from;
+}
+function openCal(){
+  var bd = dataBounds();
+  CAL.from = S.from; CAL.to = S.to; CAL.touched = false;
+  var base = (S.from || S.to || bd.last || todayIso());
+  CAL.y = +base.slice(0,4); CAL.m = +base.slice(5,7) - 1;
+  fillCalSelects();
+  renderCal();
+  openPanel('calSheet');
+}
+function calMove(delta){
+  var m = CAL.m + delta, y = CAL.y;
+  y += Math.floor(m / 12); m = ((m % 12) + 12) % 12;
+  var ys = calYears();
+  if(y < ys[0]){ y = ys[0]; m = 0; }
+  if(y > ys[ys.length-1]){ y = ys[ys.length-1]; m = 11; }
+  CAL.y = y; CAL.m = m;
+  fillCalSelects(); renderCal();
+}
+function calTap(iso){
+  if(+iso.slice(0,4) !== CAL.y || +iso.slice(5,7) - 1 !== CAL.m){
+    CAL.y = +iso.slice(0,4); CAL.m = +iso.slice(5,7) - 1; fillCalSelects();
+  }
+  if(!CAL.touched){
+    CAL.from = iso; CAL.to = iso; CAL.touched = true;
+  } else if(CAL.from && CAL.from === CAL.to){
+    if(iso === CAL.from){ applyPeriod(iso, iso); return; }
+    CAL.from = iso < CAL.from ? iso : CAL.from;
+    CAL.to = iso < CAL.to ? CAL.to : iso;
+  } else {
+    CAL.from = iso; CAL.to = iso;
+  }
+  renderCal();
+}
+function applyPeriod(from, to){
+  from = from || null; to = to || from;
+  if(from && to && from > to){ var t = from; from = to; to = t; }
+  S.from = from; S.to = to; S.limit = 60;
+  CAL.from = null; CAL.to = null;
+  closePanel('calSheet');
+  renderChips(); renderPeriod(); render();
+  if(!from) toast('전체 기간을 보여줘요');
+  else if(from === to) toast(dotDate(from) + ' 하루만 보여줘요');
+  else toast(dotDate(from) + ' ~ ' + dotDate(to) + ' 기간만 보여줘요');
 }
 
 function linkify(txt){
@@ -811,8 +1010,9 @@ function render(){
 }
 
 function renderAll(){
+  dateCountCache = null;
   renderChips();
-  renderChart();
+  renderPeriod();
   updateSub();
   render();
   updateSettings();
@@ -887,12 +1087,6 @@ function onChip(e){
   S.cat = b.dataset.cat || null;
   S.limit = 60;
   renderChips(); render();
-}
-function onChart(e){
-  var b = e.target.closest('.b'); if(!b) return;
-  S.month = (S.month === b.dataset.month) ? null : b.dataset.month;
-  S.limit = 60;
-  renderChart(); render();
 }
 function onList(e){
   var lb = e.target.closest('[data-act="label"]');
@@ -1034,7 +1228,7 @@ var BUILTIN = {};
 CATS.forEach(function(c){ BUILTIN[c.name] = 1; });
 var EDITS = {labels:[], memoCat:{}, updatedAt:null};
 var CUSTOM = {memos:[], updatedAt:null};
-var pendingAtts = [], composeCat = '', composeMid = '', attIdx = 0, labelFor = null, labelColorSel = null;
+var pendingAtts = [], composeCat = '', composeMid = '', attIdx = 0, labelFor = null, labelColorSel = null, labelTargets = null;
 var UP = {};
 var MAX_TOTAL = 20 * 1024 * 1024, MAX_EDGE = 1440, THUMB_EDGE = 240;
 var BASE_MEMOS = [];
@@ -1286,7 +1480,7 @@ function pushPendingMedia(){
 /* ── 시트 열기/닫기 ── */
 function openPanel(id){ $('scrim').classList.add('on'); $(id).classList.add('on'); }
 function anyPanel(){
-  return ['sheet', 'labelSheet', 'composeSheet'].some(function(k){ return $(k).classList.contains('on'); });
+  return ['sheet', 'labelSheet', 'composeSheet', 'calSheet'].some(function(k){ return $(k).classList.contains('on'); });
 }
 function closePanel(id){
   $(id).classList.remove('on');
@@ -1295,7 +1489,15 @@ function closePanel(id){
 
 /* ── 라벨 편집 ── */
 function renderLabelList(){
-  var m = findMemo(labelFor), cur = m ? m.cat : '';
+  var cur = '';
+  if(labelTargets){
+    var names = [];
+    labelTargets.forEach(function(id){ var m = findMemo(id); if(m && names.indexOf(m.cat) < 0) names.push(m.cat); });
+    if(names.length === 1) cur = names[0];
+  } else {
+    var one = findMemo(labelFor);
+    cur = one ? one.cat : '';
+  }
   var html = '';
   CATS.forEach(function(c){
     html += '<button class="chip sm' + (c.name === cur ? ' on' : '') + '" data-label="' + esc(c.name) + '">' +
@@ -1313,24 +1515,47 @@ function renderPalette(){
 }
 function openLabel(mid){
   var m = findMemo(mid); if(!m) return;
-  labelFor = mid; labelColorSel = null;
+  labelFor = mid; labelTargets = null; labelColorSel = null;
   var what = m.text ? m.text.replace(/\s+/g, ' ').slice(0, 34) : ((m.atts && m.atts.length) ? '첨부 ' + m.atts.length + '개' : '메모');
+  $('labelTitle').textContent = '라벨 바꾸기';
   $('labelSub').textContent = '“' + what + '” · 지금 라벨: ' + m.cat;
   $('labelName').value = ''; $('labelMsg').textContent = ''; $('labelMsg').className = 'small';
   renderLabelList(); renderPalette();
   openPanel('labelSheet');
 }
-function applyLabel(mid, name){
+function openBulkLabel(){
+  var ids = Object.keys(S.sel);
+  if(!ids.length){ toast('라벨을 바꿀 메모를 먼저 선택해 주세요'); return; }
+  labelFor = null; labelTargets = ids.slice(); labelColorSel = null;
+  var names = [];
+  ids.forEach(function(id){ var m = findMemo(id); if(m && names.indexOf(m.cat) < 0) names.push(m.cat); });
+  $('labelTitle').textContent = ids.length + '개 라벨 바꾸기';
+  $('labelSub').textContent = '선택한 ' + ids.length + '개 메모 · ' +
+    (names.length === 1 ? '지금 라벨: ' + names[0] : '라벨 ' + names.length + '종');
+  $('labelName').value = ''; $('labelMsg').textContent = ''; $('labelMsg').className = 'small';
+  renderLabelList(); renderPalette();
+  openPanel('labelSheet');
+}
+function applyLabel(ids, name){
   name = String(name || '').trim().slice(0, 14);
   if(!name) return false;
-  var m = findMemo(mid); if(!m) return false;
+  if(typeof ids === 'string') ids = [ids];
+  ids = (ids || []).filter(function(id){ return !!findMemo(id); });
+  if(!ids.length) return false;
   registerLabel(name);
-  EDITS.memoCat[mid] = {cat:name, ts:new Date().toISOString()};
-  m.cat = name; if(m._s) delete m._s;
+  var ts = new Date().toISOString();
+  ids.forEach(function(id){
+    EDITS.memoCat[id] = {cat:name, ts:ts};
+    var m = findMemo(id);
+    if(m){ m.cat = name; if(m._s) delete m._s; }
+  });
   persistEdits();
+  labelTargets = null; labelFor = null;
   closePanel('labelSheet');
+  S.selMode = false; S.sel = {}; document.body.classList.remove('sel');
   renderAll();
-  toast('라벨을 “' + name + '”로 바꿨어요');
+  toast(ids.length === 1 ? '라벨을 “' + name + '”로 바꿨어요'
+                         : ids.length + '개 라벨을 “' + name + '”로 바꿨어요');
   syncEdits().then(function(res){
     if(res.ok) toast('GitHub에 저장했어요 · 다른 기기에서도 같은 라벨');
     else if(res.reason === 'no-token') toast('이 기기에만 저장됐어요 (GitHub 토큰 없음)');
@@ -1496,7 +1721,7 @@ function saveCompose(){
   lsSet(K_LASTCAT, cat);
   closePanel('composeSheet');
   $('composeText').value = ''; pendingAtts = []; renderAttPrev(); setComposeMsg('');
-  S.cat = null; S.month = null; S.q = ''; S.sort = 'desc'; S.limit = 60;
+  S.cat = null; S.from = null; S.to = null; S.q = ''; S.sort = 'desc'; S.limit = 60;
   $('q').value = ''; $('sort').value = 'desc';
   renderAll(); resetIdle();
   toast('새 메모를 저장했어요');
@@ -1552,11 +1777,12 @@ document.addEventListener('keydown', function(e){
   else if(e.key === 'Backspace'){ e.preventDefault(); tap('⌫'); }
 });
 $('chips').addEventListener('click', onChip);
-$('chart').addEventListener('click', onChart);
 $('list').addEventListener('click', onList);
 $('q').addEventListener('input', function(e){ S.q = e.target.value; S.limit = 60; render(); });
 $('sort').addEventListener('change', function(e){ S.sort = e.target.value; render(); });
 $('selBtn').addEventListener('click', enterSel);
+$('selLabelBtn').addEventListener('click', enterSel);
+$('selLabel').addEventListener('click', openBulkLabel);
 $('selCancel').addEventListener('click', exitSel);
 $('selAll').addEventListener('click', function(){
   var vis = allVisible();
@@ -1571,7 +1797,7 @@ $('lockBtn').addEventListener('click', lockApp);
 $('setBtn').addEventListener('click', openSheet);
 $('sheetClose').addEventListener('click', closeSheet);
 $('scrim').addEventListener('click', function(){
-  ['sheet', 'labelSheet', 'composeSheet', 'confirm'].forEach(function(k){ $(k).classList.remove('on'); });
+  ['sheet', 'labelSheet', 'composeSheet', 'calSheet', 'confirm'].forEach(function(k){ $(k).classList.remove('on'); });
   $('scrim').classList.remove('on');
 });
 $('confirmNo').addEventListener('click', function(){ $('confirm').classList.remove('on'); $('scrim').classList.remove('on'); });
@@ -1636,10 +1862,10 @@ $('attprev').addEventListener('click', function(e){
   renderAttPrev();
   $('attachInfo').textContent = pendingAtts.length + '개 첨부 · 이미지는 긴 변 ' + MAX_EDGE + 'px로 줄여 저장해요';
 });
-$('labelClose').addEventListener('click', function(){ closePanel('labelSheet'); });
+$('labelClose').addEventListener('click', function(){ labelTargets = null; labelFor = null; closePanel('labelSheet'); });
 $('labelList').addEventListener('click', function(e){
   var b = e.target.closest('[data-label]'); if(!b) return;
-  applyLabel(labelFor, b.getAttribute('data-label'));
+  applyLabel(labelTargets || labelFor, b.getAttribute('data-label'));
 });
 $('labelPal').addEventListener('click', function(e){
   var b = e.target.closest('[data-color]'); if(!b) return;
@@ -1652,8 +1878,30 @@ $('labelAdd').addEventListener('click', function(){
   if(!n){ $('labelMsg').textContent = '새 라벨 이름을 적어 주세요.'; $('labelMsg').className = 'small bad'; return; }
   labelColorSel = labelColorSel || autoColor(n);
   registerLabel(n, labelColorSel);
-  applyLabel(labelFor, n);
+  applyLabel(labelTargets || labelFor, n);
 });
+
+/* ───────── 기간·달력 이벤트 ───────── */
+$('rangeBtn').addEventListener('click', openCal);
+$('rangeReset').addEventListener('click', function(){ applyPeriod(null, null); });
+$('calClose').addEventListener('click', function(){ closePanel('calSheet'); });
+$('calPrev').addEventListener('click', function(){ calMove(-1); });
+$('calNext').addEventListener('click', function(){ calMove(1); });
+$('calYear').addEventListener('change', function(e){ CAL.y = +e.target.value; fillCalSelects(); renderCal(); });
+$('calMonth').addEventListener('change', function(e){ CAL.m = +e.target.value; fillCalSelects(); renderCal(); });
+$('calGrid').addEventListener('click', function(e){
+  var b = e.target.closest('[data-d]'); if(!b) return;
+  calTap(b.getAttribute('data-d'));
+});
+$('calOne').addEventListener('click', function(){
+  if(!CAL.from){ toast('날짜를 먼저 눌러 주세요'); return; }
+  applyPeriod(CAL.from, CAL.from);
+});
+$('calApply').addEventListener('click', function(){
+  if(!CAL.from){ toast('날짜를 먼저 눌러 주세요'); return; }
+  applyPeriod(CAL.from, CAL.to || CAL.from);
+});
+$('calAll').addEventListener('click', function(){ applyPeriod(null, null); });
 $('composeText').addEventListener('keydown', function(e){
   if((e.ctrlKey || e.metaKey) && e.key === 'Enter'){ e.preventDefault(); saveCompose(); }
 });
