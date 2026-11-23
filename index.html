@@ -337,7 +337,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script>window.__CFG__ = {"repo":"du020202/kakao-archive","branch":"main","iter":100000,"dataUrl":"data.enc.json","deletedUrl":"deleted_ids.enc.json","deletedPath":"deleted_ids.enc.json","build":"2026-11-23T21:03","cats":[{"name":"링크·스크랩","color":"#2f6fb2"},{"name":"메모·할 일","color":"#6b7280"},{"name":"책·도서관","color":"#0f9d76"},{"name":"여행","color":"#0f8f9e"},{"name":"아이·학교","color":"#d9436b"},{"name":"업무 메모","color":"#7c5cd6"},{"name":"영어 학습","color":"#d97a1f"},{"name":"진도 기록","color":"#a8821a"},{"name":"파일","color":"#4a6fa5"},{"name":"사진·영상","color":"#7b8794"},{"name":"기타","color":"#8a6246"}]};</script>
+<script>window.__CFG__ = {"repo":"du020202/kakao-archive","branch":"main","iter":100000,"dataUrl":"data.enc.json","deletedUrl":"deleted_ids.enc.json","deletedPath":"deleted_ids.enc.json","build":"2026-11-23T21:06","cats":[{"name":"링크·스크랩","color":"#2f6fb2"},{"name":"메모·할 일","color":"#6b7280"},{"name":"책·도서관","color":"#0f9d76"},{"name":"여행","color":"#0f8f9e"},{"name":"아이·학교","color":"#d9436b"},{"name":"업무 메모","color":"#7c5cd6"},{"name":"영어 학습","color":"#d97a1f"},{"name":"진도 기록","color":"#a8821a"},{"name":"파일","color":"#4a6fa5"},{"name":"사진·영상","color":"#7b8794"},{"name":"기타","color":"#8a6246"}]};</script>
 <script>
 (function(){
 "use strict";
@@ -479,6 +479,8 @@ function submitPin(){
             if(left > 0){ setMsg('5번 틀렸어요. ' + left + '초 뒤에 다시 시도해 주세요.'); setTimeout(tick, 500); }
             else { attempts = 0; setMsg(''); }
           })();
+        } else if(err && /불러오지/.test(err.message)){
+          setMsg(err.message);
         } else {
           setMsg(err && err.message === '형식 오류' ? '데이터 형식이 맞지 않아요.' : 'PIN이 맞지 않아요.');
         }
@@ -815,7 +817,7 @@ function toggleSel(id){
   var n = Object.keys(S.sel).length;
   $('selN').innerHTML = n + '개 선택 <span>· 카드를 눌러 선택</span>';
 }
-function allVisible(){ return LIST.slice(0, S.limit).map(function(m){ return m.id; }); }
+function allVisible(){ return LIST.map(function(m){ return m.id; }); }
 
 function askDelete(){
   var ids = Object.keys(S.sel);
@@ -982,7 +984,11 @@ if(!hasCrypto()){
     fetchData().then(function(env){
       return decryptEnv(env, rem).then(function(p){ return {env:env, p:p}; });
     }).then(function(res){ startApp(res.p); })
-    .catch(function(){ PIN = null; buf = ''; renderDots(0); lsDel(K_PIN); lsDel(K_REM); $('remember').checked = false; });
+    .catch(function(){
+      PIN = null; buf = ''; renderDots(0); lsDel(K_PIN); lsDel(K_REM);
+      $('remember').checked = false;
+      setMsg('저장된 PIN으로 열지 못했어요. 다시 입력해 주세요.');
+    });
   } else {
     $('remember').checked = true;
   }
