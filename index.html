@@ -174,6 +174,38 @@
   .lbbar{position:absolute;bottom:calc(16px + env(safe-area-inset-bottom));left:0;right:0;display:flex;justify-content:center;gap:10px}
   .lbbar a,.lbbar button{color:#fff;background:rgba(255,255,255,.14);padding:8px 14px;border-radius:999px;font-size:12.5px;text-decoration:none}
 
+  /* 라벨 편집 */
+  .tagedit{display:inline-flex;align-items:center;justify-content:center;min-width:20px;min-height:18px;font-size:10.5px;line-height:1;
+    padding:2px 4px;border-radius:6px;color:#8b8da0;background:#f0f0f7;flex:none}
+  .tagedit:hover{background:var(--acc-soft);color:var(--acc)}
+  .tag.own{background:#eef0ff;color:#3943b4}
+
+  /* 새 메모 */
+  .newbtn{background:#191922;color:#fff;border-color:#191922;font-weight:700}
+  .fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:35;width:58px;height:58px;border-radius:50%;
+    background:#191922;color:#fff;font-size:27px;line-height:1;display:none;align-items:center;justify-content:center;
+    box-shadow:0 10px 24px rgba(20,20,40,.3)}
+  .fab:active{background:#2b2b3a}
+  body.sel .fab{display:none!important}
+  .compose textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px 12px;font:inherit;font-size:14.5px;
+    line-height:1.55;resize:vertical;min-height:92px;background:#fff;color:var(--ink);margin:10px 0 0}
+  .compose textarea::placeholder{color:#a2a4b5}
+  .composebar{display:flex;align-items:center;gap:8px;margin-top:9px;flex-wrap:wrap}
+  .attprev{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .attprev .it{position:relative;width:78px;height:78px;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#f6f6fb}
+  .attprev .it img{width:100%;height:100%;object-fit:cover;display:block}
+  .attprev .it.filefile{display:flex;align-items:center;justify-content:center;font-size:10.5px;color:#5b5d70;padding:5px;text-align:center;word-break:break-all;line-height:1.3}
+  .attprev .it .rm{position:absolute;right:3px;top:3px;width:20px;height:20px;border-radius:50%;background:rgba(20,20,35,.72);color:#fff;
+    font-size:11px;display:flex;align-items:center;justify-content:center}
+  .newlabel{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:8px}
+  .newlabel input{flex:1;min-width:130px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;font-size:13px}
+  .palette{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+  .palette button{width:22px;height:22px;border-radius:50%;border:2px solid transparent}
+  .palette button.on{border-color:#191922;box-shadow:inset 0 0 0 2px #fff}
+  .chip.sm{padding:6px 10px;font-size:12.5px}
+  .lbdl{display:inline-flex;align-items:center;gap:8px;background:#fff;color:#191922;padding:12px 18px;border-radius:12px;font-size:14px;
+    text-decoration:none;max-width:86vw;word-break:break-all}
+
   .toast{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom));transform:translate(-50%,16px);z-index:70;
     background:#191922;color:#fff;font-size:12.5px;padding:10px 15px;border-radius:999px;opacity:0;pointer-events:none;transition:.18s;
     max-width:calc(100vw - 40px);text-align:center}
@@ -207,6 +239,10 @@
     .tag{font-size:12px;padding:4px 8px}
     .copy{font-size:12.5px;padding:4px 8px}
     .thumb{width:84px;height:84px}
+    .fab{display:flex}
+    .tagedit{min-width:26px;min-height:24px;font-size:12px;padding:4px 6px}
+    .compose textarea{font-size:16px;min-height:108px}
+    .attprev .it{width:88px;height:88px}
   }
   @media (min-width:960px){
     .topin{padding:12px 22px}
@@ -278,6 +314,7 @@
           <option value="asc">오래된 순</option>
         </select>
         <span class="spacer"></span>
+        <button class="btn newbtn" id="newBtn">＋ 새 메모</button>
         <button class="btn pink" id="selBtn">선택해서 삭제</button>
       </div>
       <div class="list" id="list"></div>
@@ -293,6 +330,8 @@
     <button class="btn ghost" id="selCancel">취소</button>
     <button class="btn danger" id="selDel">삭제</button>
   </div>
+
+  <button class="fab" id="fabNew" title="새 메모" aria-label="새 메모 작성">＋</button>
 </div>
 
 <div class="scrim" id="scrim"></div>
@@ -307,9 +346,11 @@
   <div class="row"><span class="k">기간</span><span class="v" id="setRange">–</span></div>
   <div class="row"><span class="k">마지막 동기화</span><span class="v" id="setSync">–</span></div>
   <div class="row"><span class="k">삭제한 메모</span><span class="v" id="setDeleted">–</span></div>
+  <div class="row"><span class="k">웹에서 올린 메모</span><span class="v" id="setCustom">–</span></div>
+  <div class="row"><span class="k">바꾸거나 만든 라벨</span><span class="v" id="setEdits">–</span></div>
 
   <div class="sec">GitHub 영구 저장</div>
-  <p class="small">토큰을 넣으면 웹앱에서 삭제한 메모가 저장소에 바로 커밋되어 다른 기기에서도 유지됩니다. 없으면 이 기기에만 저장됩니다.</p>
+  <p class="small">토큰을 넣으면 웹앱에서 삭제한 메모·바꾼 라벨·새 메모와 첨부가 암호화되어 저장소에 바로 커밋되고, 다른 기기에서도 그대로 보입니다. 없으면 이 기기에만 저장됩니다.</p>
   <div class="actions">
     <input type="password" id="pat" placeholder="Fine-grained PAT (Contents: Read and write)" autocomplete="off" spellcheck="false">
   </div>
@@ -330,6 +371,42 @@
   <p class="small" id="buildInfo"></p>
 </div>
 
+<div class="sheet compose" id="composeSheet" role="dialog" aria-modal="true" aria-labelledby="composeTitle">
+  <button class="close" id="composeClose" aria-label="닫기">✕</button>
+  <h2 id="composeTitle">새 메모</h2>
+  <p class="small">지금 시각으로 보관함 맨 위에 저장돼요. 사진·파일도 같이 보관할 수 있어요.</p>
+  <textarea id="composeText" rows="5" placeholder="카톡에 보내듯이 적어 두세요" aria-label="메모 내용"></textarea>
+  <div class="composebar">
+    <button class="btn" id="attachBtn">📎 사진·파일</button>
+    <input type="file" id="fileInput" multiple hidden aria-hidden="true">
+    <span class="small" id="attachInfo">이미지는 긴 변 1440px로 줄여 저장 · 합계 20MB까지</span>
+  </div>
+  <div class="attprev" id="attprev"></div>
+  <div class="sec">분류</div>
+  <div class="chips" id="catPick"></div>
+  <div class="newlabel">
+    <input type="text" id="catNew" placeholder="새 라벨 이름 (예: 병원)" maxlength="14" autocomplete="off">
+    <button class="btn" id="catAdd">라벨 추가</button>
+  </div>
+  <p class="small" id="composeMsg"></p>
+  <div class="actions"><button class="btn dark" id="composeSave">보관함에 저장</button></div>
+</div>
+
+<div class="sheet" id="labelSheet" role="dialog" aria-modal="true" aria-labelledby="labelTitle">
+  <button class="close" id="labelClose" aria-label="닫기">✕</button>
+  <h2 id="labelTitle">라벨 바꾸기</h2>
+  <p class="small" id="labelSub"></p>
+  <div class="sec">라벨 선택</div>
+  <div class="chips" id="labelList"></div>
+  <div class="sec">새 라벨 만들기</div>
+  <div class="newlabel">
+    <input type="text" id="labelName" placeholder="새 라벨 이름 (예: 병원)" maxlength="14" autocomplete="off">
+    <div class="palette" id="labelPal"></div>
+    <button class="btn dark" id="labelAdd">추가하고 적용</button>
+  </div>
+  <p class="small" id="labelMsg"></p>
+</div>
+
 <div class="modal" id="confirm" role="dialog" aria-modal="true">
   <h3 id="confirmTitle">삭제할까요?</h3>
   <p id="confirmBody"></p>
@@ -347,7 +424,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script>window.__CFG__ = {"repo":"du020202/kakao-archive","branch":"main","iter":100000,"dataUrl":"data.enc.json","deletedUrl":"deleted_ids.enc.json","deletedPath":"deleted_ids.enc.json","build":"2026-11-23T22:30","cats":[{"name":"링크·스크랩","color":"#2f6fb2"},{"name":"메모·할 일","color":"#6b7280"},{"name":"책·도서관","color":"#0f9d76"},{"name":"여행","color":"#0f8f9e"},{"name":"아이·학교","color":"#d9436b"},{"name":"업무 메모","color":"#7c5cd6"},{"name":"영어 학습","color":"#d97a1f"},{"name":"진도 기록","color":"#a8821a"},{"name":"파일","color":"#4a6fa5"},{"name":"사진·영상","color":"#7b8794"},{"name":"기타","color":"#8a6246"},{"name":"스크린샷","color":"#2f8f8f"},{"name":"다운로드","color":"#a06a3c"}]};</script>
+<script>window.__CFG__ = {"repo":"du020202/kakao-archive","branch":"main","iter":100000,"dataUrl":"data.enc.json","deletedUrl":"deleted_ids.enc.json","deletedPath":"deleted_ids.enc.json","editsUrl":"edits.enc.json","editsPath":"edits.enc.json","customUrl":"custom_memos.enc.json","customPath":"custom_memos.enc.json","build":"2026-11-23T23:02","cats":[{"name":"링크·스크랩","color":"#2f6fb2"},{"name":"메모·할 일","color":"#6b7280"},{"name":"책·도서관","color":"#0f9d76"},{"name":"여행","color":"#0f8f9e"},{"name":"아이·학교","color":"#d9436b"},{"name":"업무 메모","color":"#7c5cd6"},{"name":"영어 학습","color":"#d97a1f"},{"name":"진도 기록","color":"#a8821a"},{"name":"파일","color":"#4a6fa5"},{"name":"사진·영상","color":"#7b8794"},{"name":"기타","color":"#8a6246"},{"name":"스크린샷","color":"#2f8f8f"},{"name":"다운로드","color":"#a06a3c"}]};</script>
 <script>
 (function(){
 "use strict";
@@ -521,9 +598,18 @@ function submitPin(){
 
 function lockApp(){
   PIN = null; MEMOS = []; META = {}; mediaKey = null; mediaKeyPromise = null; LIST = []; DAYS = [];
+  BASE_MEMOS = []; EDITS = {labels:[], memoCat:{}, updatedAt:null}; CUSTOM = {memos:[], updatedAt:null};
+  pendingAtts = []; composeMid = ''; attIdx = 0; UP = {};
   Object.keys(blobCache).forEach(function(k){ try{ URL.revokeObjectURL(blobCache[k].url); }catch(e){} });
   blobCache = {}; inflated = {}; S.sel = {}; S.selMode = false; S.cat = null; S.month = null; S.q = ''; S.limit = 60;
   buf = ''; renderDots(0);
+  ['sheet', 'labelSheet', 'composeSheet', 'confirm'].forEach(function(k){ try{ $(k).classList.remove('on'); }catch(e){} });
+  try{ $('scrim').classList.remove('on'); }catch(e){}
+  ['composeText', 'composeMsg', 'attprev', 'labelSub', 'labelList', 'catPick', 'labelName', 'catNew'].forEach(function(k){
+    try{ if(k === 'composeText' || k === 'labelName' || k === 'catNew') $(k).value = ''; else $(k).innerHTML = ''; }catch(e){}
+  });
+  try{ pendingAtts.forEach(function(a){ if(a.prev){ URL.revokeObjectURL(a.prev); } }); }catch(e){}
+  pendingAtts = [];
   $('app').hidden = true; $('lock').hidden = false;
   if(ls(K_REM) !== '1') lsDel(K_PIN);
   document.body.classList.remove('sel');
@@ -531,22 +617,35 @@ function lockApp(){
 
 /* ───────── 시작 ───────── */
 function startApp(payload){
-  MEMOS = payload.memos || [];
+  BASE_MEMOS = payload.memos || [];
+  MEMOS = BASE_MEMOS.slice();
   META = payload.meta || {};
   MEDIA = payload.media || {};
   blobCache = {}; inflated = {};
+  loadLocalState();
+  syncCustomIntoMemos();
+  applyEditsToMemos();
   var salt = b64ToBuf(payload.mediaSalt);
   mediaKeyPromise = deriveKey(PIN, salt).then(function(k){ mediaKey = k; return k; });
   $('lock').hidden = true;
   $('app').hidden = false;
   $('remember').checked = ls(K_REM) === '1';
-  loadDeleted().then(function(){ renderAll(); resetIdle(); });
-  $('sub').textContent = rangeText() + ' · 메모 ' + num(MEMOS.length) + '건';
+  renderAll();
+  loadDeleted().then(function(){
+    renderAll(); resetIdle();
+    loadRemoteState().then(function(){ syncCustomIntoMemos(); applyEditsToMemos(); renderAll(); });
+  });
 }
 
 function rangeText(){
-  var a = META.first ? META.first.slice(0,7).replace('-', '.') : '';
-  var b = META.last ? META.last.slice(0,7).replace('-', '.') : '';
+  var first = META.first, last = META.last;
+  MEMOS.forEach(function(m){
+    if(S.deleted[m.id]) return;
+    if(!first || m.ts < first) first = m.ts;
+    if(!last || m.ts > last) last = m.ts;
+  });
+  var a = first ? first.slice(0,7).replace('-', '.') : '';
+  var b = last ? last.slice(0,7).replace('-', '.') : '';
   return a && b ? a + ' – ' + b : '';
 }
 
@@ -598,9 +697,15 @@ function renderChips(){
 }
 
 function monthList(){
-  if(!META.first || !META.last) return [];
-  var y = +META.first.slice(0,4), m = +META.first.slice(5,7);
-  var ey = +META.last.slice(0,4), em = +META.last.slice(5,7);
+  var first = META.first, last = META.last;
+  MEMOS.forEach(function(m){
+    if(S.deleted[m.id]) return;
+    if(!first || m.ts < first) first = m.ts;
+    if(!last || m.ts > last) last = m.ts;
+  });
+  if(!first || !last) return [];
+  var y = +first.slice(0,4), m = +first.slice(5,7);
+  var ey = +last.slice(0,4), em = +last.slice(5,7);
   var out = [];
   while(y < ey || (y === ey && m <= em)){
     out.push(y + '-' + pad(m));
@@ -647,7 +752,9 @@ function attHtml(m){
   var h = '<div class="atts">';
   m.atts.forEach(function(a, i){
     if(a.k === 'file'){
-      h += '<span class="filechip">📄 ' + esc(a.n) + '</span>';
+      h += a.path
+        ? '<button class="filechip" data-act="file" data-m="' + m.id + '" data-i="' + i + '" title="내려받기">📄 ' + esc(a.n) + '</button>'
+        : '<span class="filechip">📄 ' + esc(a.n) + '</span>';
     } else if(a.k === 'video'){
       h += '<button class="thumb" data-act="video" data-m="' + m.id + '" data-i="' + i + '" aria-label="동영상 열기">' +
         '<span class="play">▶</span><span class="ph">🎬</span></button>';
@@ -661,7 +768,8 @@ function attHtml(m){
 
 function cardHtml(m){
   var t = fmtTs(m.ts);
-  var tags = '<span class="tag"><span class="d" style="background:' + (CATCOLOR[m.cat] || '#888') + '"></span>' + esc(m.cat) + '</span>';
+  var tags = '<span class="tag' + (BUILTIN[m.cat] ? '' : ' own') + '"><span class="d" style="background:' + (CATCOLOR[m.cat] || '#888') + '"></span>' + esc(m.cat) + '</span>' +
+    '<button class="tagedit" data-act="label" data-m="' + m.id + '" title="라벨 바꾸기" aria-label="라벨 바꾸기">✏️</button>';
   var srcs = [];
   (m.links || []).forEach(function(l){ if(srcs.indexOf(l.src) < 0) srcs.push(l.src); });
   srcs.slice(0, 3).forEach(function(s){ tags += '<span class="tag">' + esc(s) + '</span>'; });
@@ -698,9 +806,11 @@ function render(){
 function renderAll(){
   renderChips();
   renderChart();
+  updateSub();
   render();
   updateSettings();
 }
+function updateSub(){ $('sub').textContent = rangeText() + ' · 메모 ' + num(alive().length) + '건'; }
 
 /* 사진 썸네일 지연 복호화 */
 var io = null;
@@ -739,26 +849,28 @@ function loadThumb(el){
 }
 
 function getMedia(a, size){
-  var key = a.id + '/' + size;
-  if(blobCache[key]) return Promise.resolve(blobCache[key].url);
-  if(inflated[key]) return inflated[key];
-  var promise = (mediaKeyPromise || Promise.resolve()).then(function(){
-    return fetch('media/' + size + '/' + a.id + '.enc', {cache:'force-cache'});
-  }).then(function(r){
-    if(!r.ok) throw new Error('media ' + r.status);
-    return r.arrayBuffer();
+  var path = mediaPath(a, size);
+  if(blobCache[path]) return Promise.resolve(blobCache[path].url);
+  if(inflated[path]) return inflated[path];
+  var promise = (a.path ? idbGet(path) : Promise.resolve(null)).then(function(local){
+    if(local) return local;
+    return (mediaKeyPromise || Promise.resolve()).then(function(){
+      return fetch(path, {cache:'force-cache'});
+    }).then(function(r){
+      if(!r.ok) throw new Error('media ' + r.status);
+      return r.arrayBuffer();
+    });
   }).then(function(buf){
     if(!mediaKey) throw new Error('잠금 상태');
     var iv = new Uint8Array(buf.slice(0, 12));
     var ct = buf.slice(12);
     return crypto.subtle.decrypt({name:'AES-GCM', iv:iv}, mediaKey, ct);
   }).then(function(pt){
-    var mime = a.k === 'video' ? 'video/mp4' : (a.gif ? 'image/gif' : 'image/webp');
-    var url = URL.createObjectURL(new Blob([pt], {type:mime}));
-    blobCache[key] = {url:url};
+    var url = URL.createObjectURL(new Blob([pt], {type:mediaMime(a)}));
+    blobCache[path] = {url:url};
     return url;
   });
-  inflated[key] = promise;
+  inflated[path] = promise;
   return promise;
 }
 
@@ -776,8 +888,12 @@ function onChart(e){
   renderChart(); render();
 }
 function onList(e){
+  var lb = e.target.closest('[data-act="label"]');
+  if(lb){ openLabel(lb.dataset.m); return; }
   var copy = e.target.closest('[data-act="copy"]');
   if(copy){ copyText(copy.dataset.m); return; }
+  var file = e.target.closest('[data-act="file"]');
+  if(file){ openMedia(file.dataset.m, +file.dataset.i); return; }
   var img = e.target.closest('[data-act="image"],[data-act="video"]');
   if(img){ openMedia(img.dataset.m, +img.dataset.i); return; }
   var card = e.target.closest('.memo'); if(!card) return;
@@ -811,12 +927,17 @@ function openMedia(mid, i, download){
   body.innerHTML = '<div style="color:#fff;font-size:13px">불러오는 중…</div>';
   lb.classList.add('on');
   getMedia(a, 'f').then(function(url){
+    if(a.k === 'file'){
+      body.innerHTML = '<a class="lbdl" href="' + url + '" download="' + esc(a.n) + '">📄 ' + esc(a.n) + ' 내려받기</a>';
+      var svf = $('lbSave'); svf.href = url; svf.download = a.n;
+      return;
+    }
     body.innerHTML = a.k === 'video'
       ? '<video src="' + url + '" controls autoplay playsinline></video>'
       : '<img src="' + url + '" alt="사진">';
     var sv = $('lbSave');
     sv.href = url;
-    sv.download = a.k === 'video' ? 'video.mp4' : (a.gif ? 'photo.gif' : 'photo.webp');
+    sv.download = a.k === 'video' ? 'video.mp4' : (a.gif ? 'photo.gif' : ((a.n && /\.(jpe?g|png|webp|gif)$/i.test(a.n)) ? a.n : 'photo.webp'));
   }).catch(function(){ body.innerHTML = '<div style="color:#fff;font-size:13px">사진을 불러오지 못했어요</div>'; });
 }
 function closeMedia(){
@@ -865,14 +986,20 @@ function doDelete(){
   $('confirm').classList.remove('on'); $('scrim').classList.remove('on');
   ids.forEach(function(id){ S.deleted[id] = 1; });
   lsSet(K_DEL, JSON.stringify(Object.keys(S.deleted)));
+  var customGone = ids.filter(function(id){ return !!customMemo(id); });
+  if(customGone.length){
+    CUSTOM.memos = CUSTOM.memos.filter(function(m){ return customGone.indexOf(m.id) < 0; });
+    persistCustom();
+  }
   S.selMode = false; S.sel = {}; document.body.classList.remove('sel');
-  renderChips(); renderChart(); render(); updateSettings();
+  renderAll();
   toast(ids.length + '개를 삭제했어요');
   pushDeleted().then(function(res){
     if(res.ok) toast('GitHub에 저장했어요 · 다른 기기에서도 삭제 유지');
     else if(res.reason === 'no-token') toast('이 기기에만 저장됐어요 (GitHub 토큰 없음)');
     else toast('이 기기에만 저장됐어요 · ' + (res.reason || '전송 실패'));
   });
+  if(customGone.length && getPat()) syncCustom();
 }
 
 /* GitHub 동기화 */
@@ -885,28 +1012,469 @@ function pushDeleted(){
   if(!token) return Promise.resolve({ok:false, reason:'no-token'});
   var payload = {deleted:Object.keys(S.deleted), updatedAt:new Date().toISOString()};
   return encryptJson(payload, PIN).then(function(env){
-    var content = abToB64(utf8(JSON.stringify(env)));
-    var attempt = 0;
-    function go(sha){
-      return fetch(ghContentsUrl(CFG.deletedPath), {
-        method:'PUT', headers:ghHeaders(),
-        body:JSON.stringify({message:'deleted_ids: ' + payload.deleted.length + '개 (' + new Date().toISOString().slice(0,16) + ')',
-                             content:content, branch:CFG.branch, sha:sha})
-      }).then(function(r){
+    return ghPutRaw(CFG.deletedPath, envB64(env),
+      'deleted_ids: ' + payload.deleted.length + '개 (' + new Date().toISOString().slice(0,16) + ')');
+  });
+}
+
+/* ───────── 라벨 편집 · 새 메모 ───────── */
+var K_EDIT = 'ka.edits', K_CUSTOM = 'ka.custom', K_LASTCAT = 'ka.lastcat';
+var PALETTE = ['#2f6fb2','#0f9d76','#d9436b','#7c5cd6','#d97a1f','#a8821a','#0f8f9e','#4a6fa5','#8a6246','#2f8f8f','#6b7280','#b04c8f'];
+var BUILTIN = {};
+CATS.forEach(function(c){ BUILTIN[c.name] = 1; });
+var EDITS = {labels:[], memoCat:{}, updatedAt:null};
+var CUSTOM = {memos:[], updatedAt:null};
+var pendingAtts = [], composeCat = '', composeMid = '', attIdx = 0, labelFor = null, labelColorSel = null;
+var UP = {};
+var MAX_TOTAL = 20 * 1024 * 1024, MAX_EDGE = 1440, THUMB_EDGE = 240;
+var BASE_MEMOS = [];
+
+function readJson(k, def){
+  try{ var v = JSON.parse(ls(k) || 'null'); return (v && typeof v === 'object') ? v : def; }catch(e){ return def; }
+}
+function loadLocalState(){
+  var e = readJson(K_EDIT, null);
+  EDITS = {labels:[], memoCat:{}, updatedAt:null};
+  if(e){ EDITS.labels = e.labels || []; EDITS.memoCat = e.memoCat || {}; EDITS.updatedAt = e.updatedAt || null; }
+  var c = readJson(K_CUSTOM, null);
+  CUSTOM = {memos:[], updatedAt:null};
+  if(c){ CUSTOM.memos = (c.memos || []).filter(function(m){ return m && m.id; }); CUSTOM.updatedAt = c.updatedAt || null; }
+}
+function persistEdits(){ EDITS.updatedAt = new Date().toISOString(); lsSet(K_EDIT, JSON.stringify(EDITS)); }
+function persistCustom(){ CUSTOM.updatedAt = new Date().toISOString(); lsSet(K_CUSTOM, JSON.stringify(CUSTOM)); }
+
+function autoColor(name){
+  var s = String(name), h = 0, i;
+  for(i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return PALETTE[Math.abs(h) % PALETTE.length];
+}
+function labelColor(name){ return CATCOLOR[name] || autoColor(name); }
+function registerLabel(name, color){
+  name = String(name || '').trim().slice(0, 14);
+  if(!name) return '';
+  if(!CATCOLOR[name]){
+    var c = color || autoColor(name);
+    CATCOLOR[name] = c;
+    CATS.push({name:name, color:c});
+  }
+  if(!BUILTIN[name] && !EDITS.labels.some(function(l){ return l.name === name; })){
+    EDITS.labels.push({name:name, color:CATCOLOR[name], createdAt:new Date().toISOString()});
+  }
+  return name;
+}
+function findMemo(id){
+  for(var i = 0; i < MEMOS.length; i++){ if(MEMOS[i].id === id) return MEMOS[i]; }
+  return null;
+}
+function customMemo(id){
+  for(var i = 0; i < CUSTOM.memos.length; i++){ if(CUSTOM.memos[i].id === id) return CUSTOM.memos[i]; }
+  return null;
+}
+function syncCustomIntoMemos(){
+  CUSTOM.memos.forEach(function(m){
+    var cur = findMemo(m.id);
+    if(!cur) MEMOS.push(m);
+    else if(cur !== m){ for(var k in m){ cur[k] = m[k]; } }
+  });
+}
+function applyEditsToMemos(){
+  (EDITS.labels || []).forEach(function(l){ if(l && l.name) registerLabel(l.name, l.color); });
+  MEMOS.forEach(function(m){
+    var o = EDITS.memoCat[m.id];
+    if(o && o.cat){ m.cat = registerLabel(o.cat) || o.cat; if(m._s) delete m._s; }
+  });
+}
+function mergeState(re, rc){
+  if(re){
+    (re.labels || []).forEach(function(l){ if(l && l.name) registerLabel(l.name, l.color); });
+    var mc = re.memoCat || {};
+    Object.keys(mc).forEach(function(id){
+      var r = mc[id] || {}, l = EDITS.memoCat[id];
+      if(!l || String(r.ts || '') > String(l.ts || '')) EDITS.memoCat[id] = r;
+    });
+  }
+  if(rc){
+    (rc.memos || []).forEach(function(m){
+      if(!m || !m.id) return;
+      var cur = customMemo(m.id);
+      if(!cur) CUSTOM.memos.push(m);
+      else { for(var k in m){ if(!(k in cur)) cur[k] = m[k]; } }
+    });
+  }
+}
+function fetchEnv(url){
+  return fetch(url + (url.indexOf('?') < 0 ? '?v=' : '&v=') + Date.now(), {cache:'no-store'})
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(env){ if(!env || !env.ct) return null; return decryptEnv(env, PIN).catch(function(){ return null; }); })
+    .catch(function(){ return null; });
+}
+function loadRemoteState(){
+  return Promise.all([fetchEnv(CFG.editsUrl || 'edits.enc.json'), fetchEnv(CFG.customUrl || 'custom_memos.enc.json')])
+    .then(function(res){ mergeState(res[0], res[1]); });
+}
+
+/* ── 기기 저장(IndexedDB) — 업로드 첨부의 암호문 보관 ── */
+var IDB_NAME = 'ka-media', IDB_STORE = 'files', idbPromise = null;
+function idbDB(){
+  if(idbPromise) return idbPromise;
+  idbPromise = new Promise(function(res){
+    try{
+      var r = indexedDB.open(IDB_NAME, 1);
+      r.onupgradeneeded = function(){ try{ r.result.createObjectStore(IDB_STORE); }catch(e){} };
+      r.onsuccess = function(){ res(r.result); };
+      r.onerror = function(){ res(null); };
+    }catch(e){ res(null); }
+  });
+  return idbPromise;
+}
+function idbGet(k){
+  return idbDB().then(function(db){
+    if(!db) return null;
+    return new Promise(function(res){
+      try{
+        var q = db.transaction(IDB_STORE, 'readonly').objectStore(IDB_STORE).get(k);
+        q.onsuccess = function(){ res(q.result || null); };
+        q.onerror = function(){ res(null); };
+      }catch(e){ res(null); }
+    });
+  });
+}
+function idbPut(k, buf){
+  return idbDB().then(function(db){
+    if(!db) return false;
+    return new Promise(function(res){
+      try{
+        var q = db.transaction(IDB_STORE, 'readwrite').objectStore(IDB_STORE).put(buf, k);
+        q.onsuccess = function(){ res(true); };
+        q.onerror = function(){ res(false); };
+      }catch(e){ res(false); }
+    });
+  });
+}
+function idbDel(k){
+  return idbDB().then(function(db){
+    if(!db) return null;
+    try{ db.transaction(IDB_STORE, 'readwrite').objectStore(IDB_STORE).delete(k); }catch(e){}
+    return null;
+  });
+}
+function encBytes(buf){
+  return (mediaKeyPromise || Promise.resolve()).then(function(){
+    if(!mediaKey) throw new Error('잠금 상태');
+    var iv = crypto.getRandomValues(new Uint8Array(12));
+    return crypto.subtle.encrypt({name:'AES-GCM', iv:iv}, mediaKey, buf).then(function(ct){
+      var out = new Uint8Array(12 + ct.byteLength);
+      out.set(iv, 0); out.set(new Uint8Array(ct), 12);
+      return out.buffer;
+    });
+  });
+}
+function mediaPath(a, size){
+  if(a && a.path) return size === 't' ? (a.tpath || a.path) : a.path;
+  return 'media/' + size + '/' + a.id + '.enc';
+}
+function mediaMime(a){
+  return a.mime || (a.k === 'video' ? 'video/mp4' : (a.gif ? 'image/gif' : 'image/webp'));
+}
+
+/* ── GitHub 암호화 PUT ── */
+function ghPutRaw(path, contentB64, message){
+  if(!getPat()) return Promise.resolve({ok:false, reason:'no-token'});
+  var attempt = 0;
+  function put(sha){
+    var body = {message:message, content:contentB64, branch:CFG.branch};
+    if(sha) body.sha = sha;
+    return fetch(ghContentsUrl(path), {method:'PUT', headers:ghHeaders(), body:JSON.stringify(body)})
+      .then(function(r){
         if(r.status === 409 && attempt < 2){
           attempt++;
-          return fetch(ghContentsUrl(CFG.deletedPath) + '?ref=' + CFG.branch, {headers:ghHeaders()})
+          return fetch(ghContentsUrl(path) + '?ref=' + CFG.branch, {headers:ghHeaders()})
             .then(function(x){ return x.ok ? x.json() : null; })
-            .then(function(j){ return go(j && j.sha); });
+            .then(function(j){ return put(j && j.sha); });
         }
         if(!r.ok) return r.json().catch(function(){ return {}; }).then(function(j){ throw new Error(j.message || ('HTTP ' + r.status)); });
-        return r.json().then(function(){ return {ok:true}; });
+        return {ok:true};
       });
+  }
+  return fetch(ghContentsUrl(path) + '?ref=' + CFG.branch, {headers:ghHeaders()})
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(j){ return put(j && j.sha); })
+    .catch(function(err){ return {ok:false, reason:(err && err.message) || '전송 실패'}; });
+}
+function envB64(env){ return abToB64(utf8(JSON.stringify(env))); }
+function nowStamp(){
+  var d = new Date();
+  return d.getFullYear() + '.' + pad(d.getMonth() + 1) + '.' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+function syncEdits(){
+  var payload = {v:1, labels:EDITS.labels, memoCat:EDITS.memoCat, updatedAt:new Date().toISOString()};
+  return encryptJson(payload, PIN).then(function(env){
+    return ghPutRaw(CFG.editsPath || 'edits.enc.json', envB64(env),
+      'edits: 라벨 ' + Object.keys(EDITS.memoCat).length + '건 · 새 라벨 ' + EDITS.labels.length + '개 (' + nowStamp() + ')');
+  });
+}
+function syncCustom(){
+  var payload = {v:1, memos:CUSTOM.memos, updatedAt:new Date().toISOString()};
+  return encryptJson(payload, PIN).then(function(env){
+    return ghPutRaw(CFG.customPath || 'custom_memos.enc.json', envB64(env),
+      'custom_memos: ' + CUSTOM.memos.length + '건 (' + nowStamp() + ')');
+  });
+}
+function uploadMedia(path){
+  if(UP[path]) return Promise.resolve({ok:true});
+  return idbGet(path).then(function(buf){
+    if(!buf) return {ok:false, reason:'첨부를 찾지 못했어요'};
+    return ghPutRaw(path, abToB64(buf), 'media: ' + path.split('/').pop() + ' (' + nowStamp() + ')').then(function(res){
+      if(res.ok) UP[path] = 1;
+      return res;
+    });
+  });
+}
+function pushPendingMedia(){
+  var paths = [];
+  CUSTOM.memos.forEach(function(m){
+    (m.atts || []).forEach(function(a){ [a.tpath, a.path].forEach(function(p){ if(p && paths.indexOf(p) < 0) paths.push(p); }); });
+  });
+  var jobs = Promise.resolve(), first = null;
+  paths.forEach(function(p){
+    jobs = jobs.then(function(){
+      return uploadMedia(p).then(function(r){ if(r && !r.ok && !first) first = r; });
+    });
+  });
+  return jobs.then(function(){ return first || {ok:true}; });
+}
+
+/* ── 시트 열기/닫기 ── */
+function openPanel(id){ $('scrim').classList.add('on'); $(id).classList.add('on'); }
+function anyPanel(){
+  return ['sheet', 'labelSheet', 'composeSheet'].some(function(k){ return $(k).classList.contains('on'); });
+}
+function closePanel(id){
+  $(id).classList.remove('on');
+  if(!anyPanel() && !$('confirm').classList.contains('on')) $('scrim').classList.remove('on');
+}
+
+/* ── 라벨 편집 ── */
+function renderLabelList(){
+  var m = findMemo(labelFor), cur = m ? m.cat : '';
+  var html = '';
+  CATS.forEach(function(c){
+    html += '<button class="chip sm' + (c.name === cur ? ' on' : '') + '" data-label="' + esc(c.name) + '">' +
+      '<span class="d" style="background:' + (CATCOLOR[c.name] || c.color) + '"></span>' + esc(c.name) + '</button>';
+  });
+  $('labelList').innerHTML = html;
+}
+function renderPalette(){
+  if(!labelColorSel) labelColorSel = autoColor($('labelName').value || 'new');
+  var h = '';
+  PALETTE.forEach(function(c){
+    h += '<button data-color="' + c + '" class="' + (c === labelColorSel ? 'on' : '') + '" style="background:' + c + '" aria-label="색 ' + c + '"></button>';
+  });
+  $('labelPal').innerHTML = h;
+}
+function openLabel(mid){
+  var m = findMemo(mid); if(!m) return;
+  labelFor = mid; labelColorSel = null;
+  var what = m.text ? m.text.replace(/\s+/g, ' ').slice(0, 34) : ((m.atts && m.atts.length) ? '첨부 ' + m.atts.length + '개' : '메모');
+  $('labelSub').textContent = '“' + what + '” · 지금 라벨: ' + m.cat;
+  $('labelName').value = ''; $('labelMsg').textContent = ''; $('labelMsg').className = 'small';
+  renderLabelList(); renderPalette();
+  openPanel('labelSheet');
+}
+function applyLabel(mid, name){
+  name = String(name || '').trim().slice(0, 14);
+  if(!name) return false;
+  var m = findMemo(mid); if(!m) return false;
+  registerLabel(name);
+  EDITS.memoCat[mid] = {cat:name, ts:new Date().toISOString()};
+  m.cat = name; if(m._s) delete m._s;
+  persistEdits();
+  closePanel('labelSheet');
+  renderAll();
+  toast('라벨을 “' + name + '”로 바꿨어요');
+  syncEdits().then(function(res){
+    if(res.ok) toast('GitHub에 저장했어요 · 다른 기기에서도 같은 라벨');
+    else if(res.reason === 'no-token') toast('이 기기에만 저장됐어요 (GitHub 토큰 없음)');
+    else toast('이 기기에만 저장됐어요 · ' + (res.reason || '전송 실패'));
+  });
+  return true;
+}
+
+/* ── 새 메모 쓰기 ── */
+function newId(prefix){ return (prefix || 'w') + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
+function nowTs(){
+  var d = new Date();
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+function setComposeMsg(t, bad){
+  $('composeMsg').textContent = t || '';
+  $('composeMsg').className = 'small' + (bad ? ' bad' : '');
+}
+function renderCatPick(){
+  var html = '';
+  CATS.forEach(function(c){
+    html += '<button class="chip sm' + (composeCat === c.name ? ' on' : '') + '" data-catpick="' + esc(c.name) + '">' +
+      '<span class="d" style="background:' + (CATCOLOR[c.name] || c.color) + '"></span>' + esc(c.name) + '</button>';
+  });
+  $('catPick').innerHTML = html;
+}
+function renderAttPrev(){
+  var h = '';
+  pendingAtts.forEach(function(a, i){
+    if(a.k === 'image' && a.prev){
+      h += '<div class="it"><img src="' + a.prev + '" alt="첨부 사진"><button class="rm" data-rm="' + i + '" aria-label="첨부 빼기">✕</button></div>';
+    } else {
+      h += '<div class="it filefile"><span>📄 ' + esc(a.n) + '</span><button class="rm" data-rm="' + i + '" aria-label="첨부 빼기">✕</button></div>';
     }
-    return fetch(ghContentsUrl(CFG.deletedPath) + '?ref=' + CFG.branch, {headers:ghHeaders()})
-      .then(function(r){ return r.ok ? r.json() : null; })
-      .then(function(j){ return go(j && j.sha); })
-      .catch(function(err){ return {ok:false, reason:(err && err.message) || '전송 실패'}; });
+  });
+  $('attprev').innerHTML = h;
+}
+function openCompose(){
+  composeMid = newId('w'); attIdx = 0; pendingAtts = [];
+  $('composeText').value = ''; $('catNew').value = '';
+  setComposeMsg('');
+  $('attachInfo').textContent = '이미지는 긴 변 ' + MAX_EDGE + 'px로 줄여 저장 · 합계 20MB까지';
+  composeCat = ls(K_LASTCAT) || '';
+  if(!CATCOLOR[composeCat]){
+    var etc = CATS.filter(function(c){ return c.name === '기타'; })[0] || CATS[0] || {name:'기타'};
+    composeCat = etc.name;
+  }
+  renderCatPick(); renderAttPrev();
+  openPanel('composeSheet');
+  setTimeout(function(){ try{ $('composeText').focus(); }catch(e){} }, 90);
+}
+function fileIsImage(f){
+  return /^image\//.test(f.type || '') || /\.(png|jpe?g|webp|gif|bmp|heic|heif)$/i.test(f.name || '');
+}
+function loadImageFile(f){
+  return new Promise(function(res, rej){
+    var url = URL.createObjectURL(f);
+    var img = new Image();
+    img.onload = function(){ res({img:img, url:url}); };
+    img.onerror = function(){ URL.revokeObjectURL(url); rej(new Error('이미지 아님')); };
+    img.src = url;
+  });
+}
+function scaleCanvas(img, maxEdge){
+  var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+  var s = Math.min(1, maxEdge / Math.max(w, h));
+  var cw = Math.max(1, Math.round(w * s)), ch = Math.max(1, Math.round(h * s));
+  var c = document.createElement('canvas'); c.width = cw; c.height = ch;
+  var cx = c.getContext('2d');
+  try{ cx.imageSmoothingQuality = 'high'; }catch(e){}
+  cx.drawImage(img, 0, 0, cw, ch);
+  return c;
+}
+function canvasTo(c, q){
+  return new Promise(function(res, rej){
+    if(!c.toBlob){ rej(new Error('변환 실패')); return; }
+    c.toBlob(function(b){
+      if(!b){ rej(new Error('변환 실패')); return; }
+      if(b.type && b.type !== 'image/webp'){
+        c.toBlob(function(b2){ b2 ? res(b2) : rej(new Error('변환 실패')); }, 'image/jpeg', q);
+        return;
+      }
+      res(b);
+    }, 'image/webp', q);
+  });
+}
+function blobBuf(b){
+  return new Promise(function(res, rej){
+    var fr = new FileReader();
+    fr.onload = function(){ res(fr.result); };
+    fr.onerror = function(){ rej(fr.error); };
+    fr.readAsArrayBuffer(b);
+  });
+}
+function addOneFile(f){
+  var idx = attIdx++;
+  if(!fileIsImage(f)){
+    return f.arrayBuffer().then(function(buf){
+      var path = 'media/u/' + composeMid + '_' + idx + '_x.enc';
+      return encBytes(buf).then(function(enc){
+        return idbPut(path, enc).then(function(){
+          pendingAtts.push({k:'file', n:f.name || ('file_' + idx), size:f.size, mime:f.type || 'application/octet-stream',
+                            path:path, idx:idx, bytes:f.size});
+        });
+      });
+    });
+  }
+  return loadImageFile(f).then(function(r){
+    var full = scaleCanvas(r.img, MAX_EDGE);
+    var thumb = scaleCanvas(r.img, THUMB_EDGE);
+    var fpath = 'media/u/' + composeMid + '_' + idx + '_f.enc';
+    var tpath = 'media/u/' + composeMid + '_' + idx + '_t.enc';
+    var fw = full.width, fh = full.height;
+    return Promise.all([canvasTo(full, 0.82), canvasTo(thumb, 0.7)]).then(function(blobs){
+      var mime = blobs[0].type || 'image/webp';
+      return Promise.all([blobBuf(blobs[0]), blobBuf(blobs[1])]).then(function(bufs){
+        return Promise.all([encBytes(bufs[0]), encBytes(bufs[1])]).then(function(encs){
+          return Promise.all([idbPut(fpath, encs[0]), idbPut(tpath, encs[1])]).then(function(){
+            pendingAtts.push({k:'image', n:f.name || ('photo_' + idx + '.webp'), w:fw, h:fh, mime:mime,
+                              path:fpath, tpath:tpath, idx:idx, bytes:f.size, prev:r.url});
+          });
+        });
+      });
+    });
+  });
+}
+function addFiles(files){
+  var list = Array.prototype.slice.call(files || []);
+  if(!list.length) return;
+  var total = 0;
+  pendingAtts.forEach(function(a){ total += a.bytes || 0; });
+  var skipped = 0, failed = 0, chain = Promise.resolve();
+  setComposeMsg('사진·파일 준비 중…');
+  list.forEach(function(f){
+    chain = chain.then(function(){
+      if(total + f.size > MAX_TOTAL){ skipped++; return; }
+      total += f.size;
+      return addOneFile(f).catch(function(){ failed++; });
+    });
+  });
+  chain.then(function(){
+    renderAttPrev();
+    var msgs = [];
+    if(skipped) msgs.push('합계 20MB를 넘어 ' + skipped + '개는 넣지 못했어요. 나눠서 올려 주세요.');
+    if(failed) msgs.push(failed + '개는 읽지 못했어요.');
+    setComposeMsg(msgs.join(' '), !!msgs.length);
+    $('attachInfo').textContent = pendingAtts.length + '개 첨부 · 이미지는 긴 변 ' + MAX_EDGE + 'px로 줄여 저장해요';
+  });
+}
+function saveCompose(){
+  var text = $('composeText').value.trim();
+  if(!text && !pendingAtts.length){ setComposeMsg('내용이나 사진·파일을 하나 넣어 주세요.', true); return; }
+  var cat = composeCat || '기타';
+  registerLabel(cat);
+  var ts = nowTs(), id = composeMid || newId('w');
+  var atts = pendingAtts.map(function(a){
+    if(a.k === 'image') return {n:a.n, k:'image', w:a.w, h:a.h, mime:a.mime || 'image/webp', path:a.path, tpath:a.tpath};
+    return {n:a.n, k:'file', size:a.size, mime:a.mime || 'application/octet-stream', path:a.path};
+  });
+  var memo = {id:id, ts:ts, text:text, cat:cat, atts:atts, src:'web'};
+  CUSTOM.memos.push(memo); persistCustom();
+  if(!findMemo(id)) MEMOS.push(memo);
+  lsSet(K_LASTCAT, cat);
+  closePanel('composeSheet');
+  $('composeText').value = ''; pendingAtts = []; renderAttPrev(); setComposeMsg('');
+  S.cat = null; S.month = null; S.q = ''; S.sort = 'desc'; S.limit = 60;
+  $('q').value = ''; $('sort').value = 'desc';
+  renderAll(); resetIdle();
+  toast('새 메모를 저장했어요');
+  flushCustom();
+}
+function flushCustom(){
+  if(!getPat()){
+    toast('이 기기에만 임시 저장됐어요. 다른 기기에서도 보려면 ⚙️ 설정에서 GitHub 토큰을 입력해 주세요');
+    return Promise.resolve({ok:false, reason:'no-token'});
+  }
+  return pushPendingMedia().then(function(mr){
+    if(mr && !mr.ok && mr.reason) toast('첨부는 이 기기에만 있어요 · ' + mr.reason);
+    return syncCustom();
+  }).then(function(res){
+    if(res.ok) toast('GitHub에 저장했어요 · 다른 기기에서도 볼 수 있어요');
+    else toast('이 기기에만 저장됐어요 · ' + (res.reason || '전송 실패'));
+    return res;
   });
 }
 
@@ -917,16 +1485,18 @@ function updateSettings(){
   $('setRange').textContent = rangeText();
   $('setSync').textContent = META.lastSyncedAt ? META.lastSyncedAt.replace('T',' ').replace(/-/g,'.') : '–';
   $('setDeleted').textContent = Object.keys(S.deleted).length + '건';
+  $('setCustom').textContent = CUSTOM.memos.length + '건';
+  $('setEdits').textContent = Object.keys(EDITS.memoCat).length + '건 · 새 라벨 ' + EDITS.labels.length + '개';
   var remembered = ls(K_REM) === '1';
   $('setRemember').textContent = remembered ? '켬' : '끔';
   $('setSub').textContent = META.source ? (META.source + ' · ' + (META.builtAt || '').replace('T',' ')) : '';
   $('buildInfo').textContent = '데이터 ' + (META.builtAt || '').replace('T',' ') + ' 기준 · 서버에는 암호문만 저장됩니다.';
   $('pat').value = getPat();
-  $('patMsg').textContent = getPat() ? '토큰이 저장되어 있어요. 삭제하면 GitHub에 바로 저장됩니다.' : '토큰이 없어요. 삭제는 이 기기에만 저장됩니다.';
+  $('patMsg').textContent = getPat() ? '토큰이 저장되어 있어요. 삭제·라벨·새 메모가 GitHub에 바로 저장됩니다.' : '토큰이 없어요. 삭제·라벨·새 메모는 이 기기에만 저장됩니다.';
   $('patMsg').className = 'small ' + (getPat() ? 'ok' : '');
 }
-function openSheet(){ updateSettings(); $('sheet').classList.add('on'); $('scrim').classList.add('on'); }
-function closeSheet(){ $('sheet').classList.remove('on'); if(!$('confirm').classList.contains('on')) $('scrim').classList.remove('on'); }
+function openSheet(){ updateSettings(); openPanel('sheet'); }
+function closeSheet(){ closePanel('sheet'); }
 
 function toast(msg){
   var t = $('toast');
@@ -961,7 +1531,10 @@ $('moreBtn').addEventListener('click', function(){ S.limit += 60; render(); });
 $('lockBtn').addEventListener('click', lockApp);
 $('setBtn').addEventListener('click', openSheet);
 $('sheetClose').addEventListener('click', closeSheet);
-$('scrim').addEventListener('click', function(){ closeSheet(); $('confirm').classList.remove('on'); });
+$('scrim').addEventListener('click', function(){
+  ['sheet', 'labelSheet', 'composeSheet', 'confirm'].forEach(function(k){ $(k).classList.remove('on'); });
+  $('scrim').classList.remove('on');
+});
 $('confirmNo').addEventListener('click', function(){ $('confirm').classList.remove('on'); $('scrim').classList.remove('on'); });
 $('confirmYes').addEventListener('click', doDelete);
 $('lbClose').addEventListener('click', closeMedia);
@@ -992,6 +1565,59 @@ $('patTest').addEventListener('click', function(){
     }).catch(function(){ $('patMsg').textContent = '네트워크 오류'; $('patMsg').className = 'small bad'; });
 });
 $('remember').addEventListener('change', function(){ lsSet(K_REM, $('remember').checked ? '1' : '0'); });
+
+/* ───────── 라벨 편집·새 메모 이벤트 ───────── */
+$('newBtn').addEventListener('click', openCompose);
+$('fabNew').addEventListener('click', openCompose);
+$('composeClose').addEventListener('click', function(){ closePanel('composeSheet'); });
+$('attachBtn').addEventListener('click', function(){ $('fileInput').click(); });
+$('fileInput').addEventListener('change', function(e){ addFiles(e.target.files); e.target.value = ''; });
+$('composeSave').addEventListener('click', saveCompose);
+$('catPick').addEventListener('click', function(e){
+  var b = e.target.closest('[data-catpick]'); if(!b) return;
+  composeCat = b.getAttribute('data-catpick');
+  renderCatPick();
+});
+$('catAdd').addEventListener('click', function(){
+  var n = $('catNew').value.trim();
+  if(!n){ setComposeMsg('새 라벨 이름을 적어 주세요.', true); return; }
+  composeCat = registerLabel(n);
+  persistEdits();
+  $('catNew').value = ''; renderCatPick(); setComposeMsg('새 라벨 “' + composeCat + '”을 골랐어요');
+  if(getPat()) syncEdits();
+});
+$('attprev').addEventListener('click', function(e){
+  var b = e.target.closest('[data-rm]'); if(!b) return;
+  var i = +b.getAttribute('data-rm');
+  var a = pendingAtts[i];
+  if(!a) return;
+  [a.path, a.tpath].forEach(function(p){ if(p) idbDel(p); });
+  if(a.prev){ try{ URL.revokeObjectURL(a.prev); }catch(e2){} }
+  pendingAtts.splice(i, 1);
+  renderAttPrev();
+  $('attachInfo').textContent = pendingAtts.length + '개 첨부 · 이미지는 긴 변 ' + MAX_EDGE + 'px로 줄여 저장해요';
+});
+$('labelClose').addEventListener('click', function(){ closePanel('labelSheet'); });
+$('labelList').addEventListener('click', function(e){
+  var b = e.target.closest('[data-label]'); if(!b) return;
+  applyLabel(labelFor, b.getAttribute('data-label'));
+});
+$('labelPal').addEventListener('click', function(e){
+  var b = e.target.closest('[data-color]'); if(!b) return;
+  labelColorSel = b.getAttribute('data-color');
+  renderPalette();
+});
+$('labelName').addEventListener('input', function(){ labelColorSel = null; renderPalette(); });
+$('labelAdd').addEventListener('click', function(){
+  var n = $('labelName').value.trim();
+  if(!n){ $('labelMsg').textContent = '새 라벨 이름을 적어 주세요.'; $('labelMsg').className = 'small bad'; return; }
+  labelColorSel = labelColorSel || autoColor(n);
+  registerLabel(n, labelColorSel);
+  applyLabel(labelFor, n);
+});
+$('composeText').addEventListener('keydown', function(e){
+  if((e.ctrlKey || e.metaKey) && e.key === 'Enter'){ e.preventDefault(); saveCompose(); }
+});
 
 /* 자동 잠금(30분 무입력) */
 var idleTimer = null;
