@@ -429,7 +429,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script>window.__CFG__ = {"repo":"du020202/kakao-archive","branch":"main","iter":100000,"dataUrl":"data.enc.json","deletedUrl":"deleted_ids.enc.json","deletedPath":"deleted_ids.enc.json","editsUrl":"edits.enc.json","editsPath":"edits.enc.json","customUrl":"custom_memos.enc.json","customPath":"custom_memos.enc.json","build":"2026-11-23T23:06","cats":[{"name":"링크·스크랩","color":"#2f6fb2"},{"name":"메모·할 일","color":"#6b7280"},{"name":"책·도서관","color":"#0f9d76"},{"name":"여행","color":"#0f8f9e"},{"name":"아이·학교","color":"#d9436b"},{"name":"업무 메모","color":"#7c5cd6"},{"name":"영어 학습","color":"#d97a1f"},{"name":"진도 기록","color":"#a8821a"},{"name":"파일","color":"#4a6fa5"},{"name":"사진·영상","color":"#7b8794"},{"name":"기타","color":"#8a6246"},{"name":"스크린샷","color":"#2f8f8f"},{"name":"다운로드","color":"#a06a3c"}]};</script>
+<script>window.__CFG__ = {"repo":"du020202/kakao-archive","branch":"main","iter":100000,"dataUrl":"data.enc.json","deletedUrl":"deleted_ids.enc.json","deletedPath":"deleted_ids.enc.json","editsUrl":"edits.enc.json","editsPath":"edits.enc.json","customUrl":"custom_memos.enc.json","customPath":"custom_memos.enc.json","build":"2026-11-23T23:10","cats":[{"name":"링크·스크랩","color":"#2f6fb2"},{"name":"메모·할 일","color":"#6b7280"},{"name":"책·도서관","color":"#0f9d76"},{"name":"여행","color":"#0f8f9e"},{"name":"아이·학교","color":"#d9436b"},{"name":"업무 메모","color":"#7c5cd6"},{"name":"영어 학습","color":"#d97a1f"},{"name":"진도 기록","color":"#a8821a"},{"name":"파일","color":"#4a6fa5"},{"name":"사진·영상","color":"#7b8794"},{"name":"기타","color":"#8a6246"},{"name":"스크린샷","color":"#2f8f8f"},{"name":"다운로드","color":"#a06a3c"}]};</script>
 <script>
 (function(){
 "use strict";
@@ -1207,22 +1207,51 @@ function ghPutRaw(path, contentB64, message){
     .catch(function(err){ return {ok:false, reason:(err && err.message) || '전송 실패'}; });
 }
 function envB64(env){ return abToB64(utf8(JSON.stringify(env))); }
+function fetchRemoteState(path){
+  var token = getPat();
+  if(!token) return Promise.resolve(null);
+  return fetch('https://api.github.com/repos/' + CFG.repo + '/contents/' + path + '?ref=' + CFG.branch,
+               {headers:{'Authorization':'token ' + token, 'Accept':'application/vnd.github.raw'}, cache:'no-store'})
+    .then(function(r){ return r.ok ? r.text() : null; })
+    .then(function(txt){
+      if(!txt) return null;
+      var env;
+      try{ env = JSON.parse(txt); }catch(e){ return null; }
+      if(!env || !env.ct) return null;
+      return decryptEnv(env, PIN).catch(function(){ return null; });
+    })
+    .catch(function(){ return null; });
+}
 function nowStamp(){
   var d = new Date();
   return d.getFullYear() + '.' + pad(d.getMonth() + 1) + '.' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
 }
 function syncEdits(){
-  var payload = {v:1, labels:EDITS.labels, memoCat:EDITS.memoCat, updatedAt:new Date().toISOString()};
-  return encryptJson(payload, PIN).then(function(env){
-    return ghPutRaw(CFG.editsPath || 'edits.enc.json', envB64(env),
-      'edits: 라벨 ' + Object.keys(EDITS.memoCat).length + '건 · 새 라벨 ' + EDITS.labels.length + '개 (' + nowStamp() + ')');
+  if(!getPat()) return Promise.resolve({ok:false, reason:'no-token'});
+  return fetchRemoteState(CFG.editsPath || 'edits.enc.json').then(function(remote){
+    if(remote) mergeState(remote, null);          // 다른 기기가 바꾸기 전 라벨과 겹치지 않게 합칩니다
+    var payload = {v:1, labels:EDITS.labels, memoCat:EDITS.memoCat, updatedAt:new Date().toISOString()};
+    return encryptJson(payload, PIN).then(function(env){
+      return ghPutRaw(CFG.editsPath || 'edits.enc.json', envB64(env),
+        'edits: 라벨 ' + Object.keys(EDITS.memoCat).length + '건 · 새 라벨 ' + EDITS.labels.length + '개 (' + nowStamp() + ')');
+    });
+  }).then(function(res){
+    if(res && res.ok){ syncCustomIntoMemos(); applyEditsToMemos(); renderAll(); }
+    return res;
   });
 }
 function syncCustom(){
-  var payload = {v:1, memos:CUSTOM.memos, updatedAt:new Date().toISOString()};
-  return encryptJson(payload, PIN).then(function(env){
-    return ghPutRaw(CFG.customPath || 'custom_memos.enc.json', envB64(env),
-      'custom_memos: ' + CUSTOM.memos.length + '건 (' + nowStamp() + ')');
+  if(!getPat()) return Promise.resolve({ok:false, reason:'no-token'});
+  return fetchRemoteState(CFG.customPath || 'custom_memos.enc.json').then(function(remote){
+    if(remote) mergeState(null, remote);          // 다른 기기에서 올린 메모를 지우지 않고 함께 저장
+    var payload = {v:1, memos:CUSTOM.memos, updatedAt:new Date().toISOString()};
+    return encryptJson(payload, PIN).then(function(env){
+      return ghPutRaw(CFG.customPath || 'custom_memos.enc.json', envB64(env),
+        'custom_memos: ' + CUSTOM.memos.length + '건 (' + nowStamp() + ')');
+    });
+  }).then(function(res){
+    if(res && res.ok){ syncCustomIntoMemos(); applyEditsToMemos(); renderAll(); }
+    return res;
   });
 }
 function uploadMedia(path){
