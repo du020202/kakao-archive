@@ -348,10 +348,31 @@
 
 <div class="toast" id="toast"></div>
 
-<script>window.__CFG__ = {"repo":"du020202/kakao-archive","branch":"main","iter":100000,"dataUrl":"data.enc.json","deletedUrl":"deleted_ids.enc.json","deletedPath":"deleted_ids.enc.json","build":"2026-11-23T21:13","cats":[{"name":"링크·스크랩","color":"#2f6fb2"},{"name":"메모·할 일","color":"#6b7280"},{"name":"책·도서관","color":"#0f9d76"},{"name":"여행","color":"#0f8f9e"},{"name":"아이·학교","color":"#d9436b"},{"name":"업무 메모","color":"#7c5cd6"},{"name":"영어 학습","color":"#d97a1f"},{"name":"진도 기록","color":"#a8821a"},{"name":"파일","color":"#4a6fa5"},{"name":"사진·영상","color":"#7b8794"},{"name":"기타","color":"#8a6246"}]};</script>
+<script>window.__CFG__ = {"repo":"du020202/kakao-archive","branch":"main","iter":100000,"dataUrl":"data.enc.json","deletedUrl":"deleted_ids.enc.json","deletedPath":"deleted_ids.enc.json","build":"2026-11-23T21:20","cats":[{"name":"링크·스크랩","color":"#2f6fb2"},{"name":"메모·할 일","color":"#6b7280"},{"name":"책·도서관","color":"#0f9d76"},{"name":"여행","color":"#0f8f9e"},{"name":"아이·학교","color":"#d9436b"},{"name":"업무 메모","color":"#7c5cd6"},{"name":"영어 학습","color":"#d97a1f"},{"name":"진도 기록","color":"#a8821a"},{"name":"파일","color":"#4a6fa5"},{"name":"사진·영상","color":"#7b8794"},{"name":"기타","color":"#8a6246"}]};</script>
 <script>
 (function(){
 "use strict";
+function fitWide(){
+  try{
+    var vw = window.innerWidth || 0;
+    var sw = (window.screen && window.screen.width) || 0;
+    var dpr = window.devicePixelRatio || 1;
+    var dw = sw;
+    if(dw > 700 && dpr >= 1.5 && dw / dpr < 700) dw = dw / dpr;
+    var portrait = !!(window.screen && window.screen.height && window.screen.height > window.screen.width);
+    var z = 1;
+    if(vw >= 600 && dw && vw > dw * 1.1) z = vw / dw;
+    else if(vw >= 700 && portrait && dpr >= 1.5) z = vw / 430;
+    if(z > 1.01){
+      if(z > 1.9) z = 1.9;
+      document.documentElement.style.zoom = z.toFixed(3);
+    }else{
+      document.documentElement.style.zoom = '';
+    }
+  }catch(e){}
+}
+fitWide();
+try{ window.addEventListener('resize', fitWide); }catch(e){}
 var CFG = window.__CFG__ || {};
 var ITER = CFG.iter || 100000;
 var K_PIN = 'ka.pin', K_REM = 'ka.remember', K_PAT = 'ka.pat', K_DEL = 'ka.deleted';
