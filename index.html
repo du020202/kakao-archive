@@ -140,6 +140,14 @@
   .memo .body{font-size:14.5px;line-height:1.58;word-break:break-word;white-space:pre-wrap;margin:0}
   .memo .body:empty{display:none}
   .memo .body a{color:#1a45c8;text-decoration:underline;text-underline-offset:2px;word-break:break-all}
+  .memo .body.clamp{max-height:11.4em;overflow:hidden;
+    -webkit-mask-image:linear-gradient(#000 76%,rgba(0,0,0,.08));mask-image:linear-gradient(#000 76%,rgba(0,0,0,.08))}
+  .morebtn{margin-top:5px;font-size:11.5px;font-weight:700;color:#3f4bd8;background:#f1f3ff;border-radius:7px;padding:4px 8px}
+  .morebtn:active{background:var(--acc-soft)}
+  .lnks{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+  .lchip{display:inline-flex;align-items:center;gap:5px;max-width:100%;font-size:11.5px;color:#1a45c8;background:#eef1ff;
+    border-radius:8px;padding:5px 8px;text-decoration:none;word-break:break-all}
+  .lchip:active{background:#e2e7ff}
   .memo .badges{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px}
   .tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#5b5d70;background:#f6f6fb;border-radius:7px;padding:3px 7px}
   .tag .d{width:6px;height:6px;border-radius:50%}
@@ -158,7 +166,7 @@
   body.sel .memo.picked{border-color:#191922;background:#fbfbfe}
   .memo .selbox{display:none}
   body.sel .memo .selbox{display:flex}
-  body.sel .copy,body.sel .body a{pointer-events:none}
+  body.sel .copy,body.sel .body a,body.sel .morebtn,body.sel .lnks a{pointer-events:none}
 
   .empty{padding:48px 16px;text-align:center;color:#8b8da0;font-size:13.5px}
   .more{display:flex;justify-content:center;padding:18px 0}
@@ -503,7 +511,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script>window.__CFG__ = {"repo":"du020202/kakao-archive","branch":"main","iter":100000,"dataUrl":"data.enc.json","deletedUrl":"deleted_ids.enc.json","deletedPath":"deleted_ids.enc.json","editsUrl":"edits.enc.json","editsPath":"edits.enc.json","customUrl":"custom_memos.enc.json","customPath":"custom_memos.enc.json","build":"2026-11-23T23:39","cats":[{"name":"링크·스크랩","color":"#2f6fb2"},{"name":"메모·할 일","color":"#6b7280"},{"name":"책·도서관","color":"#0f9d76"},{"name":"여행","color":"#0f8f9e"},{"name":"아이·학교","color":"#d9436b"},{"name":"업무 메모","color":"#7c5cd6"},{"name":"영어 학습","color":"#d97a1f"},{"name":"진도 기록","color":"#a8821a"},{"name":"파일","color":"#4a6fa5"},{"name":"사진·영상","color":"#7b8794"},{"name":"기타","color":"#8a6246"},{"name":"스크린샷","color":"#2f8f8f"},{"name":"다운로드","color":"#a06a3c"}]};</script>
+<script>window.__CFG__ = {"repo":"du020202/kakao-archive","branch":"main","iter":100000,"dataUrl":"data.enc.json","deletedUrl":"deleted_ids.enc.json","deletedPath":"deleted_ids.enc.json","editsUrl":"edits.enc.json","editsPath":"edits.enc.json","customUrl":"custom_memos.enc.json","customPath":"custom_memos.enc.json","build":"2026-11-24T20:23","cats":[{"name":"링크·스크랩","color":"#2f6fb2"},{"name":"인스타 저장","color":"#c13584"},{"name":"스레드 저장","color":"#4a4a55"},{"name":"메모·할 일","color":"#6b7280"},{"name":"책·도서관","color":"#0f9d76"},{"name":"여행","color":"#0f8f9e"},{"name":"아이·학교","color":"#d9436b"},{"name":"업무 메모","color":"#7c5cd6"},{"name":"영어 학습","color":"#d97a1f"},{"name":"진도 기록","color":"#a8821a"},{"name":"파일","color":"#4a6fa5"},{"name":"사진·영상","color":"#7b8794"},{"name":"기타","color":"#8a6246"},{"name":"스크린샷","color":"#2f8f8f"},{"name":"다운로드","color":"#a06a3c"}]};</script>
 <script>
 (function(){
 "use strict";
@@ -582,7 +590,7 @@ function lsDel(k){ try{ localStorage.removeItem(k); }catch(e){} }
 function getPat(){ var p = ls(K_PAT); return (p && p.length > 20) ? p : ''; }
 
 /* ───────── 상태 ───────── */
-var S = {cat:null, from:null, to:null, q:'', sort:'desc', selMode:false, sel:{}, deleted:{}, limit:60};
+var S = {cat:null, from:null, to:null, q:'', sort:'desc', selMode:false, sel:{}, deleted:{}, exp:{}, limit:60};
 var MEMOS = [], META = {}, MEDIA = {}, mediaKey = null, mediaKeyPromise = null, PIN = null;
 var LIST = [], DAYS = [], blobCache = {}, inflated = {};
 
@@ -682,7 +690,7 @@ function lockApp(){
   CATS = (CFG.cats || []).slice(); CATCOLOR = {};
   CATS.forEach(function(c){ CATCOLOR[c.name] = c.color; });
   Object.keys(blobCache).forEach(function(k){ try{ URL.revokeObjectURL(blobCache[k].url); }catch(e){} });
-  blobCache = {}; inflated = {}; S.sel = {}; S.selMode = false; S.cat = null; S.from = null; S.to = null; S.q = ''; S.limit = 60;
+  blobCache = {}; inflated = {}; S.sel = {}; S.exp = {}; S.selMode = false; S.cat = null; S.from = null; S.to = null; S.q = ''; S.limit = 60;
   buf = ''; renderDots(0);
   ['sheet', 'labelSheet', 'composeSheet', 'calSheet', 'confirm'].forEach(function(k){ try{ $(k).classList.remove('on'); }catch(e){} });
   try{ $('scrim').classList.remove('on'); }catch(e){}
@@ -972,18 +980,36 @@ function attHtml(m){
   return h + '</div>';
 }
 
+function linkChips(m){
+  var txt = m.text || '', out = '';
+  (m.links || []).forEach(function(l){
+    if(!l || !l.url || txt.indexOf(l.url) >= 0) return;
+    var u = l.url.replace(/^https?:\/\//, '').replace(/^www\./, '');
+    out += '<a class="lchip" href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer" title="' + esc(l.url) + '">🔗 ' + esc(u) + '</a>';
+  });
+  return out ? '<div class="lnks">' + out + '</div>' : '';
+}
+
 function cardHtml(m){
   var t = fmtTs(m.ts);
   var tags = '<span class="tag' + (BUILTIN[m.cat] ? '' : ' own') + '"><span class="d" style="background:' + (CATCOLOR[m.cat] || '#888') + '"></span>' + esc(m.cat) + '</span>' +
     '<button class="tagedit" data-act="label" data-m="' + m.id + '" title="라벨 바꾸기" aria-label="라벨 바꾸기">✏️</button>';
+  var linkedSrc = {};
+  (m.links || []).forEach(function(l){ if(l && l.url && (m.text || '').indexOf(l.url) < 0) linkedSrc[l.src] = 1; });
   var srcs = [];
-  (m.links || []).forEach(function(l){ if(srcs.indexOf(l.src) < 0) srcs.push(l.src); });
+  (m.links || []).forEach(function(l){ if(!linkedSrc[l.src] && srcs.indexOf(l.src) < 0) srcs.push(l.src); });
   srcs.slice(0, 3).forEach(function(s){ tags += '<span class="tag">' + esc(s) + '</span>'; });
   var picked = S.sel[m.id] ? ' picked' : '';
+  var body = '', more = '';
+  if(m.text){
+    var long = m.text.length > 320, open = !!S.exp[m.id];
+    body = '<p class="body' + (long && !open ? ' clamp' : '') + '">' + linkify(m.text) + '</p>';
+    if(long) more = '<button class="morebtn" data-act="more" data-m="' + m.id + '">' + (open ? '접기' : '더 보기') + '</button>';
+  }
   return '<article class="memo' + picked + '" data-id="' + m.id + '">' +
     '<div class="mh"><time>' + t.time + '</time><span class="selbox' + (S.sel[m.id] ? ' on' : '') + '">' + (S.sel[m.id] ? '✓' : '') + '</span></div>' +
-    (m.text ? '<p class="body">' + linkify(m.text) + '</p>' : '') +
-    attHtml(m) +
+    body + more +
+    attHtml(m) + linkChips(m) +
     '<div class="badges">' + tags + '<button class="copy" data-act="copy" data-m="' + m.id + '">복사</button></div>' +
     '</article>';
 }
@@ -1096,6 +1122,16 @@ function onList(e){
   }
   var copy = e.target.closest('[data-act="copy"]');
   if(copy){ copyText(copy.dataset.m); return; }
+  var more = e.target.closest('[data-act="more"]');
+  if(more){
+    if(S.selMode){ toggleSel(more.dataset.m); return; }
+    var mid2 = more.dataset.m;
+    S.exp[mid2] = !S.exp[mid2];
+    var pb = document.querySelector('.memo[data-id="' + mid2 + '"] .body');
+    if(pb) pb.classList.toggle('clamp', !S.exp[mid2]);
+    more.textContent = S.exp[mid2] ? '접기' : '더 보기';
+    return;
+  }
   var file = e.target.closest('[data-act="file"]');
   if(file){ openMedia(file.dataset.m, +file.dataset.i); return; }
   var img = e.target.closest('[data-act="image"],[data-act="video"]');
