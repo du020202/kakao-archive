@@ -516,7 +516,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script>window.__CFG__ = {"repo":"du020202/kakao-archive","branch":"main","iter":100000,"dataUrl":"data.enc.json","deletedUrl":"deleted_ids.enc.json","deletedPath":"deleted_ids.enc.json","editsUrl":"edits.enc.json","editsPath":"edits.enc.json","customUrl":"custom_memos.enc.json","customPath":"custom_memos.enc.json","build":"2026-11-24T21:47","cats":[{"name":"링크·스크랩","color":"#2f6fb2"},{"name":"인스타 저장","color":"#c13584"},{"name":"스레드 저장","color":"#4a4a55"},{"name":"메모·할 일","color":"#6b7280"},{"name":"책·도서관","color":"#0f9d76"},{"name":"여행","color":"#0f8f9e"},{"name":"아이·학교","color":"#d9436b"},{"name":"업무 메모","color":"#7c5cd6"},{"name":"영어 학습","color":"#d97a1f"},{"name":"진도 기록","color":"#a8821a"},{"name":"파일","color":"#4a6fa5"},{"name":"사진·영상","color":"#7b8794"},{"name":"기타","color":"#8a6246"},{"name":"스크린샷","color":"#2f8f8f"},{"name":"다운로드","color":"#a06a3c"}]};</script>
+<script>window.__CFG__ = {"repo":"du020202/kakao-archive","branch":"main","iter":100000,"dataUrl":"data.enc.json","deletedUrl":"deleted_ids.enc.json","deletedPath":"deleted_ids.enc.json","editsUrl":"edits.enc.json","editsPath":"edits.enc.json","customUrl":"custom_memos.enc.json","customPath":"custom_memos.enc.json","build":"2026-11-24T21:55","cats":[{"name":"링크·스크랩","color":"#2f6fb2"},{"name":"인스타 저장","color":"#c13584"},{"name":"스레드 저장","color":"#4a4a55"},{"name":"메모·할 일","color":"#6b7280"},{"name":"책·도서관","color":"#0f9d76"},{"name":"여행","color":"#0f8f9e"},{"name":"아이·학교","color":"#d9436b"},{"name":"업무 메모","color":"#7c5cd6"},{"name":"영어 학습","color":"#d97a1f"},{"name":"진도 기록","color":"#a8821a"},{"name":"파일","color":"#4a6fa5"},{"name":"사진·영상","color":"#7b8794"},{"name":"기타","color":"#8a6246"},{"name":"스크린샷","color":"#2f8f8f"},{"name":"다운로드","color":"#a06a3c"}]};</script>
 <script>
 (function(){
 "use strict";
@@ -1192,7 +1192,7 @@ function closeMedia(){
 
 /* 선택 모드 — 카드를 꾹 누르면(450ms) 바로 그 카드가 선택된 채로 진입 */
 var LP_MS = 450, LP_PX = 10;
-var lpTimer = null, lpCard = null, lpX = 0, lpY = 0, lpFiredAt = 0;
+var lpTimer = null, lpCard = null, lpX = 0, lpY = 0, lpGuard = false;
 var LP_SKIP = 'a[href],button,input,select,textarea,label,[role="button"],[contenteditable="true"]';
 
 function selHintText(){
@@ -1230,13 +1230,14 @@ function toggleSel(id){
   paintCard(id);
   selHintText();
 }
-/** 꾹 누르기로 진입한 직후의 click/tap(선택을 도로 풀어 버리는 것)을 한 번 삼킨다. */
+/** 꾹 누르기 직후 따라오는 click/tap(방금 선택을 도로 풀어 버리는 것)을 한 번 삼킨다. */
 function lpEatClick(){
-  if(lpFiredAt && Date.now() - lpFiredAt < 700){ lpFiredAt = 0; return true; }
+  if(lpGuard){ lpGuard = false; return true; }
   return false;
 }
 function lpStop(){ if(lpTimer){ clearTimeout(lpTimer); lpTimer = null; } lpCard = null; }
 function lpDown(e){
+  if(lpGuard) lpGuard = false;                           /* 새 누름 = 앞 제스처는 끝남 */
   if(S.selMode) return;                                  /* 이미 선택 모드면 탭으로 동작 */
   if(e.pointerType === 'mouse' && e.button !== 0) return; /* 우클릭은 contextmenu 쪽에서 */
   var card = e.target.closest('.memo');
@@ -1248,7 +1249,7 @@ function lpDown(e){
     lpTimer = null;
     var c = lpCard; lpCard = null;
     if(!c || !document.body.contains(c)) return;
-    lpFiredAt = Date.now();
+    lpGuard = true;
     try{ if(navigator.vibrate) navigator.vibrate(12); }catch(err){}
     enterSel(c.dataset.id);
   }, LP_MS);
@@ -1269,8 +1270,8 @@ function lpWire(el){
     if(Math.abs(t.clientX - lpX) > LP_PX || Math.abs(t.clientY - lpY) > LP_PX) lpStop();
   }, {passive:true});
   el.addEventListener('touchend', function(e){           /* 꾹 누르기 뒤 합성 click 차단 */
-    if(lpFiredAt && Date.now() - lpFiredAt < 700){
-      lpFiredAt = 0;
+    if(lpGuard){
+      lpGuard = false;
       if(e.cancelable) e.preventDefault();
     }
   }, {passive:false});
