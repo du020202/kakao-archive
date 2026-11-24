@@ -162,12 +162,18 @@
   .filechip{display:inline-flex;align-items:center;gap:6px;max-width:100%;font-size:11.5px;color:#4d4f61;background:#f6f6fb;border-radius:8px;padding:6px 9px;word-break:break-all}
   .selbox{width:20px;height:20px;border-radius:6px;border:1.5px solid #cfd0e0;display:flex;align-items:center;justify-content:center;
     margin-left:auto;flex:none;background:#fff}
+  /* 카드 꾹 눌러 선택 — 꾹 누르는 동안 브라우저 텍스트 선택·길게 누르기 메뉴를 막는다 */
+  .memo{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:pan-y}
   body.sel .memo{cursor:pointer}
   body.sel .memo .selbox.on{background:#191922;border-color:#191922;color:#fff;font-size:12px}
   body.sel .memo.picked{border-color:#191922;background:#fbfbfe}
   .memo .selbox{display:none}
   body.sel .memo .selbox{display:flex}
-  body.sel .copy,body.sel .body a,body.sel .morebtn,body.sel .lnks a{pointer-events:none}
+  @media (hover:hover) and (pointer:fine){ .memo:hover .selbox{display:flex} }
+  body.sel .copy,body.sel .body a,body.sel .morebtn,body.sel .lnks a,
+  body.sel .tagedit,body.sel .thumb,body.sel .filechip{pointer-events:none}
+  .listhint{font-size:11.5px;color:#9294a8;margin:0 0 9px 3px;line-height:1.4}
+  body.sel .listhint{display:none}
 
   .empty{padding:48px 16px;text-align:center;color:#8b8da0;font-size:13.5px}
   .more{display:flex;justify-content:center;padding:18px 0}
@@ -287,7 +293,6 @@
     .toolbar{row-gap:6px}
     .toolbar .spacer{display:none}
     .toolbar #newBtn{margin-left:auto}
-    .toolbar #selBtn,.toolbar #selLabelBtn{flex:1 1 140px;min-width:0;justify-content:center;white-space:nowrap}
     .day h3{font-size:14px;margin:0 0 8px 3px}
     .memo{padding:13px 14px 11px}
     .memo time{font-size:12.5px}
@@ -376,9 +381,8 @@
         </select>
         <span class="spacer"></span>
         <button class="btn newbtn" id="newBtn">＋ 새 메모</button>
-        <button class="btn pink" id="selBtn">선택해서 삭제</button>
-        <button class="btn" id="selLabelBtn">선택해서 라벨변경</button>
       </div>
+      <p class="listhint" id="listHint">카드를 꾹 누르면 선택 모드 · 탭해서 여러 개</p>
       <div class="list" id="list"></div>
       <div class="empty" id="empty" hidden>조건에 맞는 메모가 없어요</div>
       <div class="more" id="more" hidden><button class="btn" id="moreBtn">더 보기</button></div>
@@ -512,7 +516,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script>window.__CFG__ = {"repo":"du020202/kakao-archive","branch":"main","iter":100000,"dataUrl":"data.enc.json","deletedUrl":"deleted_ids.enc.json","deletedPath":"deleted_ids.enc.json","editsUrl":"edits.enc.json","editsPath":"edits.enc.json","customUrl":"custom_memos.enc.json","customPath":"custom_memos.enc.json","build":"2026-11-24T21:25","cats":[{"name":"링크·스크랩","color":"#2f6fb2"},{"name":"인스타 저장","color":"#c13584"},{"name":"스레드 저장","color":"#4a4a55"},{"name":"메모·할 일","color":"#6b7280"},{"name":"책·도서관","color":"#0f9d76"},{"name":"여행","color":"#0f8f9e"},{"name":"아이·학교","color":"#d9436b"},{"name":"업무 메모","color":"#7c5cd6"},{"name":"영어 학습","color":"#d97a1f"},{"name":"진도 기록","color":"#a8821a"},{"name":"파일","color":"#4a6fa5"},{"name":"사진·영상","color":"#7b8794"},{"name":"기타","color":"#8a6246"},{"name":"스크린샷","color":"#2f8f8f"},{"name":"다운로드","color":"#a06a3c"}]};</script>
+<script>window.__CFG__ = {"repo":"du020202/kakao-archive","branch":"main","iter":100000,"dataUrl":"data.enc.json","deletedUrl":"deleted_ids.enc.json","deletedPath":"deleted_ids.enc.json","editsUrl":"edits.enc.json","editsPath":"edits.enc.json","customUrl":"custom_memos.enc.json","customPath":"custom_memos.enc.json","build":"2026-11-24T21:47","cats":[{"name":"링크·스크랩","color":"#2f6fb2"},{"name":"인스타 저장","color":"#c13584"},{"name":"스레드 저장","color":"#4a4a55"},{"name":"메모·할 일","color":"#6b7280"},{"name":"책·도서관","color":"#0f9d76"},{"name":"여행","color":"#0f8f9e"},{"name":"아이·학교","color":"#d9436b"},{"name":"업무 메모","color":"#7c5cd6"},{"name":"영어 학습","color":"#d97a1f"},{"name":"진도 기록","color":"#a8821a"},{"name":"파일","color":"#4a6fa5"},{"name":"사진·영상","color":"#7b8794"},{"name":"기타","color":"#8a6246"},{"name":"스크린샷","color":"#2f8f8f"},{"name":"다운로드","color":"#a06a3c"}]};</script>
 <script>
 (function(){
 "use strict";
@@ -1115,16 +1119,19 @@ function onChip(e){
   renderChips(); render();
 }
 function onList(e){
-  var lb = e.target.closest('[data-act="label"]');
-  if(lb){
-    if(S.selMode){ toggleSel(lb.dataset.m); return; }
-    openLabel(lb.dataset.m); return;
+  var card = e.target.closest('.memo');
+  if(lpEatClick()) return;                       /* 꾹 누르기 직후 따라오는 click 은 무시 */
+  if(S.selMode){                                 /* 선택 모드에서는 카드 안 어디를 눌러도 선택/해제 */
+    if(card) toggleSel(card.dataset.id);
+    return;
   }
+  if(card && e.target.closest('.selbox')){ enterSel(card.dataset.id); return; }
+  var lb = e.target.closest('[data-act="label"]');
+  if(lb){ openLabel(lb.dataset.m); return; }
   var copy = e.target.closest('[data-act="copy"]');
   if(copy){ copyText(copy.dataset.m); return; }
   var more = e.target.closest('[data-act="more"]');
   if(more){
-    if(S.selMode){ toggleSel(more.dataset.m); return; }
     var mid2 = more.dataset.m;
     S.exp[mid2] = !S.exp[mid2];
     var pb = document.querySelector('.memo[data-id="' + mid2 + '"] .body');
@@ -1136,8 +1143,6 @@ function onList(e){
   if(file){ openMedia(file.dataset.m, +file.dataset.i); return; }
   var img = e.target.closest('[data-act="image"],[data-act="video"]');
   if(img){ openMedia(img.dataset.m, +img.dataset.i); return; }
-  var card = e.target.closest('.memo'); if(!card) return;
-  if(S.selMode) toggleSel(card.dataset.id);
 }
 function copyText(mid){
   var m = MEMOS.filter(function(x){ return x.id === mid; })[0];
@@ -1185,29 +1190,90 @@ function closeMedia(){
   $('lbBody').innerHTML = '';
 }
 
-/* 선택/삭제 */
-function enterSel(){
-  S.selMode = true; S.sel = {};
-  document.body.classList.add('sel');
-  $('selN').innerHTML = '0개 선택 <span>· 카드를 눌러 선택</span>';
-  render();
+/* 선택 모드 — 카드를 꾹 누르면(450ms) 바로 그 카드가 선택된 채로 진입 */
+var LP_MS = 450, LP_PX = 10;
+var lpTimer = null, lpCard = null, lpX = 0, lpY = 0, lpFiredAt = 0;
+var LP_SKIP = 'a[href],button,input,select,textarea,label,[role="button"],[contenteditable="true"]';
+
+function selHintText(){
+  var n = Object.keys(S.sel).length;
+  $('selN').innerHTML = n + '개 선택 <span>· ' + (n ? '카드를 눌러 더 선택' : '카드를 눌러 선택') + '</span>';
+}
+function paintCard(id){
+  var card = document.querySelector('.memo[data-id="' + id + '"]');
+  if(!card) return;
+  var on = !!S.sel[id];
+  card.classList.toggle('picked', on);
+  var box = card.querySelector('.selbox');
+  if(box){ box.classList.toggle('on', on); box.textContent = on ? '✓' : ''; }
+}
+function enterSel(id){
+  if(!S.selMode){
+    S.selMode = true; S.sel = {};
+    document.body.classList.add('sel');
+  }
+  if(id){ S.sel[id] = 1; paintCard(id); }
+  selHintText();
 }
 function exitSel(){
   S.selMode = false; S.sel = {};
   document.body.classList.remove('sel');
-  render();
+  Array.prototype.forEach.call(document.querySelectorAll('.memo.picked'), function(card){
+    card.classList.remove('picked');
+    var box = card.querySelector('.selbox');
+    if(box){ box.classList.remove('on'); box.textContent = ''; }
+  });
+  selHintText();
 }
 function toggleSel(id){
   if(S.sel[id]) delete S.sel[id]; else S.sel[id] = 1;
-  var card = document.querySelector('.memo[data-id="' + id + '"]');
-  if(card){
-    var on = !!S.sel[id];
-    card.classList.toggle('picked', on);
-    var box = card.querySelector('.selbox');
-    box.classList.toggle('on', on); box.textContent = on ? '✓' : '';
-  }
-  var n = Object.keys(S.sel).length;
-  $('selN').innerHTML = n + '개 선택 <span>· 카드를 눌러 선택</span>';
+  paintCard(id);
+  selHintText();
+}
+/** 꾹 누르기로 진입한 직후의 click/tap(선택을 도로 풀어 버리는 것)을 한 번 삼킨다. */
+function lpEatClick(){
+  if(lpFiredAt && Date.now() - lpFiredAt < 700){ lpFiredAt = 0; return true; }
+  return false;
+}
+function lpStop(){ if(lpTimer){ clearTimeout(lpTimer); lpTimer = null; } lpCard = null; }
+function lpDown(e){
+  if(S.selMode) return;                                  /* 이미 선택 모드면 탭으로 동작 */
+  if(e.pointerType === 'mouse' && e.button !== 0) return; /* 우클릭은 contextmenu 쪽에서 */
+  var card = e.target.closest('.memo');
+  if(!card) return;
+  if(e.target.closest(LP_SKIP)) return;                  /* 복사·✏️·🔗·더 보기·썸네일 등은 그대로 */
+  lpStop();
+  lpCard = card; lpX = e.clientX; lpY = e.clientY;
+  lpTimer = setTimeout(function(){
+    lpTimer = null;
+    var c = lpCard; lpCard = null;
+    if(!c || !document.body.contains(c)) return;
+    lpFiredAt = Date.now();
+    try{ if(navigator.vibrate) navigator.vibrate(12); }catch(err){}
+    enterSel(c.dataset.id);
+  }, LP_MS);
+}
+function lpMove(e){
+  if(!lpTimer) return;
+  if(Math.abs(e.clientX - lpX) > LP_PX || Math.abs(e.clientY - lpY) > LP_PX) lpStop();
+}
+function lpWire(el){
+  el.addEventListener('pointerdown', lpDown);
+  el.addEventListener('pointermove', lpMove);
+  el.addEventListener('pointerup', lpStop);
+  el.addEventListener('pointercancel', lpStop);
+  el.addEventListener('pointerleave', lpStop);
+  el.addEventListener('touchmove', function(e){          /* 터치 스크롤 안전망 */
+    if(!lpTimer || !e.touches || !e.touches[0]) return;
+    var t = e.touches[0];
+    if(Math.abs(t.clientX - lpX) > LP_PX || Math.abs(t.clientY - lpY) > LP_PX) lpStop();
+  }, {passive:true});
+  el.addEventListener('touchend', function(e){           /* 꾹 누르기 뒤 합성 click 차단 */
+    if(lpFiredAt && Date.now() - lpFiredAt < 700){
+      lpFiredAt = 0;
+      if(e.cancelable) e.preventDefault();
+    }
+  }, {passive:false});
 }
 function allVisible(){ return LIST.map(function(m){ return m.id; }); }
 
@@ -1814,10 +1880,17 @@ document.addEventListener('keydown', function(e){
 });
 $('chips').addEventListener('click', onChip);
 $('list').addEventListener('click', onList);
+lpWire($('list'));
+/* 카드 우클릭(PC) = 선택 모드 진입. 링크는 브라우저 메뉴 그대로 두고, 꾹 누르기 때 뜨는 텍스트 선택·길게 누르기 메뉴는 막는다 */
+document.addEventListener('contextmenu', function(e){
+  var card = e.target.closest ? e.target.closest('.memo') : null;
+  if(!card) return;
+  if(!S.selMode && e.target.closest('a[href]')) return;
+  e.preventDefault();
+  if(!S.selMode) enterSel(card.dataset.id);
+});
 $('q').addEventListener('input', function(e){ S.q = e.target.value; S.limit = 60; render(); });
 $('sort').addEventListener('change', function(e){ S.sort = e.target.value; render(); });
-$('selBtn').addEventListener('click', enterSel);
-$('selLabelBtn').addEventListener('click', enterSel);
 $('selLabel').addEventListener('click', openBulkLabel);
 $('selCancel').addEventListener('click', exitSel);
 $('selAll').addEventListener('click', function(){
@@ -1825,7 +1898,7 @@ $('selAll').addEventListener('click', function(){
   var all = vis.every(function(id){ return S.sel[id]; });
   S.sel = {}; if(!all) vis.forEach(function(id){ S.sel[id] = 1; });
   render();
-  $('selN').innerHTML = Object.keys(S.sel).length + '개 선택 <span>· 카드를 눌러 선택</span>';
+  selHintText();
 });
 $('selDel').addEventListener('click', askDelete);
 $('moreBtn').addEventListener('click', function(){ S.limit += 60; render(); });
