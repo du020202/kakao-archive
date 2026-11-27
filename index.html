@@ -522,7 +522,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script>window.__CFG__ = {"repo":"du020202/kakao-archive","branch":"main","iter":100000,"dataUrl":"data.enc.json","deletedUrl":"deleted_ids.enc.json","deletedPath":"deleted_ids.enc.json","editsUrl":"edits.enc.json","editsPath":"edits.enc.json","customUrl":"custom_memos.enc.json","customPath":"custom_memos.enc.json","build":"2026-11-27T16:10","cats":[{"name":"링크·스크랩","color":"#2f6fb2"},{"name":"인스타 저장","color":"#c13584"},{"name":"스레드 저장","color":"#4a4a55"},{"name":"메모·할 일","color":"#6b7280"},{"name":"책·도서관","color":"#0f9d76"},{"name":"여행","color":"#0f8f9e"},{"name":"아이·학교","color":"#d9436b"},{"name":"업무 메모","color":"#7c5cd6"},{"name":"영어 학습","color":"#d97a1f"},{"name":"진도 기록","color":"#a8821a"},{"name":"파일","color":"#4a6fa5"},{"name":"사진·영상","color":"#7b8794"},{"name":"기타","color":"#8a6246"},{"name":"스크린샷","color":"#2f8f8f"},{"name":"다운로드","color":"#a06a3c"},{"name":"네이버 카페","color":"#03c75a"}]};</script>
+<script>window.__CFG__ = {"repo":"du020202/kakao-archive","branch":"main","iter":100000,"dataUrl":"data.enc.json","deletedUrl":"deleted_ids.enc.json","deletedPath":"deleted_ids.enc.json","editsUrl":"edits.enc.json","editsPath":"edits.enc.json","customUrl":"custom_memos.enc.json","customPath":"custom_memos.enc.json","build":"2026-11-27T20:19","cats":[{"name":"링크·스크랩","color":"#2f6fb2"},{"name":"인스타 저장","color":"#c13584"},{"name":"스레드 저장","color":"#4a4a55"},{"name":"메모·할 일","color":"#6b7280"},{"name":"책·도서관","color":"#0f9d76"},{"name":"여행","color":"#0f8f9e"},{"name":"아이·학교","color":"#d9436b"},{"name":"업무 메모","color":"#7c5cd6"},{"name":"영어 학습","color":"#d97a1f"},{"name":"진도 기록","color":"#a8821a"},{"name":"파일","color":"#4a6fa5"},{"name":"사진·영상","color":"#7b8794"},{"name":"기타","color":"#8a6246"},{"name":"스크린샷","color":"#2f8f8f"},{"name":"다운로드","color":"#a06a3c"},{"name":"네이버 카페","color":"#03c75a"}]};</script>
 <script>
 (function(){
 "use strict";
@@ -792,17 +792,53 @@ function fmtTs(ts){
   return {day: y + '.' + pad(mo) + '.' + pad(da) + ' (' + w + ')', time: t};
 }
 
+/* 0건 라벨은 화면에 남기지 않는다 (2026-11-27 두영 님 요청)
+   - 전체 건수: 기간 필터와 무관하게 보관함 전체(alive)에서 센 값 — 라벨을 고르는 목록(라벨 바꾸기·새 메모)에 쓴다.
+   - 현재 건수: 지금 보고 있는 기간(periodAlive)에서 센 값 — 분류 칩(필터)에 쓴다.  */
+function catCounts(){
+  var o = {};
+  alive().forEach(function(m){ o[m.cat] = (o[m.cat]||0) + 1; });
+  return o;
+}
+function periodCounts(){
+  var o = {};
+  periodAlive().forEach(function(m){ o[m.cat] = (o[m.cat]||0) + 1; });
+  return o;
+}
 function renderChips(){
-  var counts = {};
+  var counts = periodCounts();
   var pool = periodAlive();
-  pool.forEach(function(m){ counts[m.cat] = (counts[m.cat]||0) + 1; });
+  if(S.cat && !counts[S.cat]) S.cat = null;      /* 보는 기간에 0건이 된 라벨은 선택도 푼다 */
   var html = '<button class="chip' + (S.cat ? '' : ' on') + '" data-cat="">전체 <span class="n">' + num(pool.length) + '</span></button>';
   CATS.forEach(function(c){
+    if(!counts[c.name]) return;                  /* 0건 라벨 칩은 그리지 않는다 */
     html += '<button class="chip' + (S.cat === c.name ? ' on' : '') + '" data-cat="' + esc(c.name) + '">' +
       '<span class="d" style="background:' + c.color + '"></span>' + esc(c.name) +
       ' <span class="n">' + num(counts[c.name] || 0) + '</span></button>';
   });
   $('chips').innerHTML = html;
+}
+/* 전체 0건이 된 사용자 라벨 정의는 저장 목록(edits)에서도 정리한다.
+   - 기본(빌트인) 라벨과, 다른 기기가 붙인 라벨 편집(memoCat)이 가리키는 라벨, 지금 쓰는 라벨은 남긴다.  */
+function pruneEmptyLabels(){
+  if(!(EDITS.labels || []).length) return;
+  var total = catCounts(), used = {}, mc = EDITS.memoCat || {};
+  Object.keys(mc).forEach(function(id){ var e = mc[id]; if(e && e.cat) used[e.cat] = 1; });
+  var keep = [], gone = [];
+  EDITS.labels.forEach(function(l){
+    if(!l || !l.name) return;
+    var n = l.name;
+    if(BUILTIN[n] || total[n] || used[n] || n === composeCat || n === S.cat){ keep.push(l); return; }
+    gone.push(n);
+  });
+  if(!gone.length) return;
+  EDITS.labels = keep;
+  gone.forEach(function(n){
+    CATS = CATS.filter(function(c){ return c.name !== n; });
+    delete CATCOLOR[n];
+  });
+  persistEdits();
+  pruneEmptyLabels.gone = (pruneEmptyLabels.gone || []).concat(gone);
 }
 
 /* ───────── 기간(달력 피커) ───────── */
@@ -1127,6 +1163,7 @@ try{ window.addEventListener('resize', function(){ clearTimeout(onViewportChange
 
 function renderAll(){
   dateCountCache = null;
+  pruneEmptyLabels();
   renderChips();
   renderPeriod();
   updateSub();
@@ -1688,8 +1725,12 @@ function renderLabelList(){
     var one = findMemo(labelFor);
     cur = one ? one.cat : '';
   }
+  var keep = {}, total = catCounts();
+  if(cur) keep[cur] = 1;
+  if(labelTargets){ labelTargets.forEach(function(id){ var mm = findMemo(id); if(mm) keep[mm.cat] = 1; }); }
   var html = '';
   CATS.forEach(function(c){
+    if(!total[c.name] && !keep[c.name]) return;   /* 전체 0건 라벨은 라벨 목록에서도 숨김 */
     html += '<button class="chip sm' + (c.name === cur ? ' on' : '') + '" data-label="' + esc(c.name) + '">' +
       '<span class="d" style="background:' + (CATCOLOR[c.name] || c.color) + '"></span>' + esc(c.name) + '</button>';
   });
@@ -1765,8 +1806,9 @@ function setComposeMsg(t, bad){
   $('composeMsg').className = 'small' + (bad ? ' bad' : '');
 }
 function renderCatPick(){
-  var html = '';
+  var html = '', total = catCounts();
   CATS.forEach(function(c){
+    if(!total[c.name] && c.name !== composeCat) return;   /* 전체 0건 라벨은 분류 목록에서도 숨김 */
     html += '<button class="chip sm' + (composeCat === c.name ? ' on' : '') + '" data-catpick="' + esc(c.name) + '">' +
       '<span class="d" style="background:' + (CATCOLOR[c.name] || c.color) + '"></span>' + esc(c.name) + '</button>';
   });
