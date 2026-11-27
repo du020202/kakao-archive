@@ -128,6 +128,11 @@
   .spacer{flex:1}
 
   .list{display:grid;grid-template-columns:1fr;gap:16px;align-items:start;min-width:0}
+  /* PC 벽돌 배치(Masonry) — 카드 낱개를 높이가 가장 낮은 열에 차례로 쌓는다 */
+  .list.masonry{display:flex;gap:18px;align-items:flex-start}
+  .list.masonry .mcol{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:18px}
+  .mstage{position:absolute;left:-99999px;top:0;visibility:hidden;pointer-events:none;
+    display:flex;flex-direction:column;gap:18px}
   .day{min-width:0}
   .day h3{font-size:12.5px;font-weight:700;color:#3d3f52;margin:0 0 7px 3px;letter-spacing:.1px}
   .day h3 span{font-weight:500;color:#9294a8;margin-left:4px}
@@ -517,7 +522,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script>window.__CFG__ = {"repo":"du020202/kakao-archive","branch":"main","iter":100000,"dataUrl":"data.enc.json","deletedUrl":"deleted_ids.enc.json","deletedPath":"deleted_ids.enc.json","editsUrl":"edits.enc.json","editsPath":"edits.enc.json","customUrl":"custom_memos.enc.json","customPath":"custom_memos.enc.json","build":"2026-11-27T09:31","cats":[{"name":"링크·스크랩","color":"#2f6fb2"},{"name":"인스타 저장","color":"#c13584"},{"name":"스레드 저장","color":"#4a4a55"},{"name":"메모·할 일","color":"#6b7280"},{"name":"책·도서관","color":"#0f9d76"},{"name":"여행","color":"#0f8f9e"},{"name":"아이·학교","color":"#d9436b"},{"name":"업무 메모","color":"#7c5cd6"},{"name":"영어 학습","color":"#d97a1f"},{"name":"진도 기록","color":"#a8821a"},{"name":"파일","color":"#4a6fa5"},{"name":"사진·영상","color":"#7b8794"},{"name":"기타","color":"#8a6246"},{"name":"스크린샷","color":"#2f8f8f"},{"name":"다운로드","color":"#a06a3c"},{"name":"네이버 카페","color":"#03c75a"}]};</script>
+<script>window.__CFG__ = {"repo":"du020202/kakao-archive","branch":"main","iter":100000,"dataUrl":"data.enc.json","deletedUrl":"deleted_ids.enc.json","deletedPath":"deleted_ids.enc.json","editsUrl":"edits.enc.json","editsPath":"edits.enc.json","customUrl":"custom_memos.enc.json","customPath":"custom_memos.enc.json","build":"2026-11-27T16:10","cats":[{"name":"링크·스크랩","color":"#2f6fb2"},{"name":"인스타 저장","color":"#c13584"},{"name":"스레드 저장","color":"#4a4a55"},{"name":"메모·할 일","color":"#6b7280"},{"name":"책·도서관","color":"#0f9d76"},{"name":"여행","color":"#0f8f9e"},{"name":"아이·학교","color":"#d9436b"},{"name":"업무 메모","color":"#7c5cd6"},{"name":"영어 학습","color":"#d97a1f"},{"name":"진도 기록","color":"#a8821a"},{"name":"파일","color":"#4a6fa5"},{"name":"사진·영상","color":"#7b8794"},{"name":"기타","color":"#8a6246"},{"name":"스크린샷","color":"#2f8f8f"},{"name":"다운로드","color":"#a06a3c"},{"name":"네이버 카페","color":"#03c75a"}]};</script>
 <script>
 (function(){
 "use strict";
@@ -1002,8 +1007,9 @@ function linkChips(m){
   return out ? '<div class="lnks">' + out + '</div>' : '';
 }
 
-function cardHtml(m){
+function cardHtml(m, withDate){
   var t = fmtTs(m.ts);
+  var tlabel = withDate ? (t.day.slice(0, 10) + ' ' + t.time) : t.time;
   var tags = '<span class="tag' + (BUILTIN[m.cat] ? '' : ' own') + '"><span class="d" style="background:' + (CATCOLOR[m.cat] || '#888') + '"></span>' + esc(m.cat) + '</span>' +
     '<button class="tagedit" data-act="label" data-m="' + m.id + '" title="라벨 바꾸기" aria-label="라벨 바꾸기">✏️</button>' +
     (m.cafe ? '<span class="tag cafe">☕ ' + esc(m.cafe) + '</span>' : '');
@@ -1020,10 +1026,65 @@ function cardHtml(m){
     if(long) more = '<button class="morebtn" data-act="more" data-m="' + m.id + '">' + (open ? '접기' : '더 보기') + '</button>';
   }
   return '<article class="memo' + picked + '" data-id="' + m.id + '">' +
-    '<div class="mh"><time>' + t.time + '</time><span class="selbox' + (S.sel[m.id] ? ' on' : '') + '">' + (S.sel[m.id] ? '✓' : '') + '</span></div>' +
+    '<div class="mh"><time datetime="' + esc(m.ts) + '">' + tlabel + '</time><span class="selbox' + (S.sel[m.id] ? ' on' : '') + '">' + (S.sel[m.id] ? '✓' : '') + '</span></div>' +
     attHtml(m) + body + more + linkChips(m) +
     '<div class="badges">' + tags + '<button class="copy" data-act="copy" data-m="' + m.id + '">복사</button></div>' +
     '</article>';
+}
+
+/* ───────── PC 벽돌 배치(Masonry) ───────── */
+var MASONRY_GAP = 18, MASONRY_MIN_COL = 360, MASONRY_MAX_COL = 3;
+function isPC(){ try{ return (window.innerWidth || 0) >= 960; }catch(e){ return false; } }
+function masonryCols(){
+  var w = 0;
+  try{ w = $('list').clientWidth || 0; }catch(e){ w = 0; }
+  if(!w) w = Math.max(0, (window.innerWidth || 0) - 384);
+  var n = Math.floor((w + MASONRY_GAP) / (MASONRY_MIN_COL + MASONRY_GAP));
+  if(n < 2) n = 2;
+  if(n > MASONRY_MAX_COL) n = MASONRY_MAX_COL;
+  return n;
+}
+/* 최신 카드부터 위→아래·좌→우 순서는 그대로 두고, 높이가 가장 낮은 열부터 채운다. */
+function layoutMasonry(slice){
+  var list = $('list');
+  var gap = MASONRY_GAP;
+  var cols = masonryCols();
+  var i, k;
+  list.innerHTML = '';
+  var colEls = [];
+  for(i = 0; i < cols; i++){
+    var c = document.createElement('div');
+    c.className = 'mcol';
+    list.appendChild(c);
+    colEls.push(c);
+  }
+  /* 1) 실제 열과 같은 폭의 임시 기둥에 카드를 한 번에 넣어 높이를 한 번에 잰다 */
+  var colW = colEls[0].clientWidth || Math.floor((list.clientWidth - gap * (cols - 1)) / cols);
+  var stage = document.createElement('div');
+  stage.className = 'mstage';
+  stage.style.width = Math.max(120, colW) + 'px';
+  stage.setAttribute('aria-hidden', 'true');
+  var tmp = document.createElement('div');
+  var cards = [];
+  slice.forEach(function(m){
+    tmp.innerHTML = cardHtml(m, true).trim();
+    var card = tmp.firstChild;
+    if(!card) return;
+    cards.push(card);
+    stage.appendChild(card);
+  });
+  document.body.appendChild(stage);
+  var hs = cards.map(function(el){ return el.getBoundingClientRect().height; });
+  document.body.removeChild(stage);
+  /* 2) 가장 낮은 열에 차례로 넣는다(같으면 왼쪽 열) */
+  var acc = [];
+  for(k = 0; k < cols; k++) acc.push(0);
+  for(i = 0; i < cards.length; i++){
+    var best = 0;
+    for(k = 1; k < cols; k++){ if(acc[k] < acc[best] - 0.5) best = k; }
+    colEls[best].appendChild(cards[i]);
+    acc[best] += hs[i] + gap;
+  }
 }
 
 function render(){
@@ -1031,21 +1092,38 @@ function render(){
   $('count').textContent = num(LIST.length);
   $('empty').hidden = LIST.length > 0;
   var slice = LIST.slice(0, S.limit);
-  var html = '', day = '', cards = '', openDay = false;
-  var flush = function(){
-    if(openDay){ html += '<section class="day"><h3>' + dayLabel(day) + '</h3><div class="cards">' + cards + '</div></section>'; }
-    cards = '';
-  };
-  slice.forEach(function(m){
-    var d = m.ts.slice(0, 10);
-    if(d !== day){ flush(); day = d; openDay = true; }
-    cards += cardHtml(m);
-  });
-  flush();
-  $('list').innerHTML = html || '';
+  var list = $('list');
+  if(isPC()){
+    list.className = 'list masonry';
+    layoutMasonry(slice);
+  }else{
+    list.className = 'list';
+    var html = '', day = '', cards = '', openDay = false;
+    var flush = function(){
+      if(openDay){ html += '<section class="day"><h3>' + dayLabel(day) + '</h3><div class="cards">' + cards + '</div></section>'; }
+      cards = '';
+    };
+    slice.forEach(function(m){
+      var d = m.ts.slice(0, 10);
+      if(d !== day){ flush(); day = d; openDay = true; }
+      cards += cardHtml(m, false);
+    });
+    flush();
+    list.innerHTML = html || '';
+  }
   $('more').hidden = LIST.length <= S.limit;
   inflate();
 }
+var wasPC = isPC();
+function onViewportChange(){
+  var pc = isPC();
+  if(wasPC === null){ wasPC = pc; return; }
+  if(pc === wasPC) return;
+  wasPC = pc;
+  if($('app').hidden || !MEMOS.length) return;
+  render();
+}
+try{ window.addEventListener('resize', function(){ clearTimeout(onViewportChange._t); onViewportChange._t = setTimeout(onViewportChange, 160); }); }catch(e){}
 
 function renderAll(){
   dateCountCache = null;
@@ -1142,6 +1220,7 @@ function onList(e){
   if(more){
     var mid2 = more.dataset.m;
     S.exp[mid2] = !S.exp[mid2];
+    if(isPC()){ render(); return; }        /* PC 벽돌 배치는 높이가 바뀌면 다시 쌓는다 */
     var pb = document.querySelector('.memo[data-id="' + mid2 + '"] .body');
     if(pb) pb.classList.toggle('clamp', !S.exp[mid2]);
     more.textContent = S.exp[mid2] ? '접기' : '더 보기';
